@@ -8,37 +8,44 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 
+import oktmr.grafthug.query.QueryParser;
+
 public final class RDFRawParser {
 
-    public static final DataStoreManager dataStore = new DataStoreManager();
+  public static final DataStoreManager dataStore = new DataStoreManager();
 
-    public static void main(
-            String args[]) throws IOException, RDFParseException, RDFHandlerException {
-        Reader reader = new FileReader("University0_0.owl");
+  public static void main(String args[]) throws IOException, RDFParseException, RDFHandlerException {
 
-        RDFParser rdfParser = Rio
-                .createParser(RDFFormat.RDFXML);
-        rdfParser.setRDFHandler(new RDFListener());
+    String q = " PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
+        + "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>" + "PREFIX owl: <http://www.w3.org/2002/07/owl#>"
+        + "PREFIX ub: <http://swat.cse.lehigh.edu/onto/univ-bench.owl#>" + " SELECT ?x "
+        + "WHERE {?x rdf:type ub:Subj18Student .  ?x rdf:type ub:GraduateStudent . ?x rdf:type ub:TeachingAssistant }";
 
-        rdfParser.parse(reader, "");
+    QueryParser.parse(q);
 
-        reader.close();
+    Reader reader = new FileReader("University0_0.owl");
 
-        System.out.println(dataStore.objects.get(26).first);
-        System.out.println(dataStore.objects.get(26).last);
+    RDFParser rdfParser = Rio.createParser(RDFFormat.RDFXML);
+    rdfParser.setRDFHandler(new RDFListener());
 
+    rdfParser.parse(reader, "");
+
+    reader.close();
+
+    System.out.println(dataStore.objects.get(26).first);
+    System.out.println(dataStore.objects.get(26).last);
+
+  }
+
+  private static class RDFListener extends RDFHandlerBase {
+
+    @Override
+    public void handleStatement(Statement st) {
+      System.out.println("\n" + st.getSubject() + "\t " + st.getPredicate().getNamespace()
+          + st.getPredicate().getLocalName() + "\t " + st.getObject());
+      dataStore.add(st.getSubject(), st.getPredicate(), st.getObject());
     }
 
-    private static class RDFListener extends RDFHandlerBase {
-
-        @Override
-        public void handleStatement(Statement st) {
-            System.out.println("\n" + st.getSubject() +
-                                       "\t " + st.getPredicate().getNamespace() + st.getPredicate().getLocalName() +
-                                       "\t " + st.getObject());
-            dataStore.add(st.getSubject(), st.getPredicate(), st.getObject());
-        }
-
-    }
+  }
 
 }

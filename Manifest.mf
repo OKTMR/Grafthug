@@ -1,0 +1,3 @@
+Main-Class: oktmr.grafthug.RDFRawParser
+Class-Path: lib/*
+Application-Name: grafthug
