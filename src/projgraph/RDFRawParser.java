@@ -1,4 +1,4 @@
-package Projgraph;
+package projgraph;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -12,12 +12,19 @@ import org.openrdf.rio.Rio;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 
 public final class RDFRawParser {
-
+	
+	public static final DataStore ds = new DataStore();
+	public static final Dictionnaire dico = new Dictionnaire();
+	
 	private static class RDFListener extends RDFHandlerBase {
 
 		@Override
 		public void handleStatement(Statement st) {
 			System.out.println("\n" + st.getSubject() + "\t " + st.getPredicate() + "\t " + st.getObject());
+			int indexSubject = ds.add(st.getSubject().stringValue());
+			int indexPredicate = ds.add(st.getPredicate().stringValue());
+			int indexObject = ds.add(st.getObject().stringValue());
+			dico.add(indexSubject,indexPredicate,indexObject);
 		}
 
 	};
