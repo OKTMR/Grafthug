@@ -20,10 +20,12 @@ public final class RDFRawParser {
 
 		@Override
 		public void handleStatement(Statement st) {
-			System.out.println("\n" + st.getSubject() + "\t " + st.getPredicate() + "\t " + st.getObject());
+			//System.out.println("\n" + st.getSubject() + "\t " + st.getPredicate() + "\t " + st.getObject());
+			//Transformer les valeurs en index (int)
 			int indexSubject = ds.add(st.getSubject().stringValue());
 			int indexPredicate = ds.add(st.getPredicate().stringValue());
 			int indexObject = ds.add(st.getObject().stringValue());
+			//Ajout des index au dictionnaire
 			dico.add(indexSubject,indexPredicate,indexObject);
 		}
 
@@ -38,6 +40,7 @@ public final class RDFRawParser {
 		rdfParser.setRDFHandler(new RDFListener());
 		try {
 			rdfParser.parse(reader, "");
+			dico.index();
 		} catch (Exception e) {
 
 		}

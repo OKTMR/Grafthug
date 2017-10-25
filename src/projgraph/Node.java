@@ -1,11 +1,13 @@
 package projgraph;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 public class Node {
-	private int id;
-	public HashMap<Edge, Node> linkIn; //edge, nodeIn = object
-	public HashMap<Edge, Node> linkOut; //edge, nodeOut = subject
+	private int id; //index
+	public HashMap<Edge, HashSet<Node>> linkIn; //edge, nodeIn = object
+	public HashMap<Edge, HashSet<Node>> linkOut; //edge, nodeOut = subject
+	public HashMap<Node, ArrayList<Edge>> indexStructure = new HashMap<>(); //yolo
 	
 	Node(int id){
 		this.id = id;
@@ -17,14 +19,38 @@ public class Node {
 	 * nodeOut is a subject
 	 */
 	public void addLinkOut (Edge edge, Node nodeOut){
-		linkOut.put(edge, nodeOut);
+		linkOut.computeIfAbsent(edge, k->new HashSet<Node>()).add(nodeOut);
 	}
 	
 	/**
 	 * this is a subject
-	 * nodeIn is a object
+	 * @param edge is edge between the nodes
+	 * @param nodeIn is a object
 	 */
 	public void addLinkIn (Edge edge, Node nodeIn){
-		linkIn.put(edge, nodeIn);
+		linkIn.computeIfAbsent(edge, k->new HashSet<Node>()).add(nodeIn);
+	}
+	
+	/**
+	 * Create an indexstructure from linkOut
+	 * @return indexed graph of node
+	 */
+	public void createIndex(){
+		for(Entry<Edge,HashSet<Node>> entry : linkOut.entrySet()){
+	        HashSet<Node> node = entry.getValue();
+	    	Edge edge = entry.getKey();
+	    	Iterator<Node> iterator = node.iterator();
+	    	while(iterator.hasNext()){
+	    		indexStructure.computeIfAbsent(iterator.next(), k-> new ArrayList<Edge>()).add(edge);
+	    	}
+	    }
+	}
+	
+	/**
+	 * 
+	 * @return indexed graph of node
+	 */
+	public HashMap<Node, ArrayList<Edge>> getIndexStructure(){
+		return indexStructure;
 	}
 }
