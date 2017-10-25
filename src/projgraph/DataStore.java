@@ -14,7 +14,7 @@ public class DataStore {
 
 	public int add(String value) {
 		if (!valueIndexes.containsKey(value)) {
-			int index = values.size();
+			int index = values.size(); //auto-increment yolo
 			valueIndexes.put(value, index);
 			values.add(value);
 			return index;

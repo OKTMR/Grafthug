@@ -13,10 +13,15 @@ public class Dictionnaire {
 	}
 	
 	public void add(int subject, int predicate, int object) {
+		// subject = node out
+		// object = node in
+		// predicate = edge
+		Node nodeOut = addNode(subject);
+		Node nodeIn = addNode(object);
+		Edge edge = addEdge(predicate);		
+		nodeOut.addLinkIn(edge,nodeIn);
+		nodeIn.addLinkOut(edge,nodeOut);
 		
-		//subject object
-		
-		//predicate
 	}
 	
 	public Node addNode(int nodeId) {
