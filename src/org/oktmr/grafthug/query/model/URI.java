@@ -1,6 +1,6 @@
 package org.oktmr.grafthug.query.model;
 
-class URI implements Value {
+public class URI implements Value {
   public int namespaceIdx;
   public String uri;
 
@@ -13,6 +13,11 @@ class URI implements Value {
     return uri;
   }
 
+  /**
+   * Detects the index where the localname ends
+   * @param uri the uri to detect
+   * @return the index where the type needs to be splitted
+   */
   public static int getLocalNameIndex(String uri) {
     int separatorIdx = uri.indexOf('#');
 
@@ -31,4 +36,15 @@ class URI implements Value {
     return separatorIdx + 1;
   }
 
+  /**
+   * Removes &lt; and &gt;
+   * @param namespace given String to clean
+   * @return cleaned result
+   */
+  public static String cleanAngleQuotes(String namespace) {
+    if (namespace.charAt(0) == '<' && namespace.charAt(namespace.length() - 1) == '>')
+      return namespace.substring(1, namespace.length() - 1);
+
+    return namespace;
+  }
 }
