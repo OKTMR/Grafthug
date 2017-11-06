@@ -49,7 +49,6 @@ public class Query {
         return prefixes;
     }
 
-
     public ArrayList<Condition> getConditions() {
         return conditions;
     }

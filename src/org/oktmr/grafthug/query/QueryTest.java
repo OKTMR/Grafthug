@@ -1,5 +1,6 @@
 package org.oktmr.grafthug.query;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.oktmr.grafthug.query.exception.IncorrectConditionStructure;
@@ -20,6 +21,14 @@ class QueryTest {
             System.out.println(Arrays.asList(query.getVariables()));
             System.out.println(Arrays.asList(query.getConditions()));
             System.out.println(Arrays.asList(query.getPrefixes()));
+            ArrayList<Condition> conds = query.getConditions();
+            for(Condition cond : conds) {
+            	int idVar = 1;
+            	if(cond.getSubject().isVariable()) {
+            		cond.setSubject(idVar);
+            	}
+            }
+            System.out.println(conds);
             
         } catch (IncorrectPrefixStructure | IncorrectConditionStructure e) {
             // TODO Auto-generated catch block

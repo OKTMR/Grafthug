@@ -79,7 +79,7 @@ public class QueryParser {
      */
     private static HashMap<Integer, Field> extractVariables(String variableString) {
         ArrayList<Field> fields = new ArrayList<>();
-        int key = 0;
+        int key = 1;
         String[] splitted = variableString.split("\\s+");
 
         for (String split : splitted) {

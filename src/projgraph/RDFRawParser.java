@@ -39,7 +39,11 @@ public final class RDFRawParser {
 		rdfParser.setRDFHandler(new RDFListener());
 		try {
 			rdfParser.parse(reader, "");
-			dico.index();
+			dico.index(); //Generate indexStructure
+			System.out.println("Number of nodes : " + dico.nodes.size());
+			System.out.println("Number of edges : " + dico.edges.size());
+			System.out.println(ds.getValueToIndex(349)); //Just a test
+			
 		} catch (Exception e) {
 
 		}

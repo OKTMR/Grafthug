@@ -16,6 +16,14 @@ public class Condition {
         this.object = object;
 
     }
+    
+    public Field<Resource> getSubject() {
+    	return subject;
+    }
+    
+    public Field<Resource> setSubject(int id) {
+    	return subject;
+    }
 
     public String toString() {
         return subject.stringValue() + " " + predicate.stringValue() + " " + object.stringValue();
