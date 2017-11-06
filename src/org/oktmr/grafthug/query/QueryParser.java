@@ -77,17 +77,20 @@ public class QueryParser {
      * @param variableString raw string containing only the result variables
      * @return a hashmap containing all the variables
      */
-    private static ArrayList<Field> extractVariables(String variableString) {
+    private static HashMap<Integer, Field> extractVariables(String variableString) {
         ArrayList<Field> fields = new ArrayList<>();
-        HashMap
-
+        int key = 0;
         String[] splitted = variableString.split("\\s+");
 
         for (String split : splitted) {
             fields.add(new Field(Field.getVariableName(split)));
         }
-
-        return fields;
+        HashMap<Integer, Field> variables = new HashMap<>();
+        for(Field field : fields) {
+        	variables.put(key, field);
+        	key++;
+        }
+        return variables;
     }
 
     private static ArrayList<Condition> extractConditions(HashMap<String, String> prefixes, String conditionString)

@@ -68,7 +68,7 @@ public class Dictionnaire {
 			HashMap<Node, ArrayList<Edge>> indexStructure = new HashMap<>();
 			node.createIndex();
 			indexStructure = node.getIndexStructure();
-			System.out.println(indexStructure);
+			System.out.println(Arrays.asList(indexStructure));
 		}
 	}
 }

@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class Query {
     private HashMap<String, String> prefixes;
-    private HashMap<Field, Integer> variables;
+    private HashMap<Integer, Field> variables;
     private ArrayList<Field> fields;
     private ArrayList<Condition> conditions;
 
@@ -42,6 +42,23 @@ public class Query {
     public void addVariables(HashMap<Integer, Field> variables) {
         this.variables.putAll(variables);
     }
+    
+    /*Getters*/
+    
+    public HashMap<String, String> getPrefixes() {
+        return prefixes;
+    }
+
+
+    public ArrayList<Condition> getConditions() {
+        return conditions;
+    }
+
+    public HashMap<Integer, Field> getVariables() {
+        return variables;
+    }
+    
+    
 
     @Override
     public String toString() {

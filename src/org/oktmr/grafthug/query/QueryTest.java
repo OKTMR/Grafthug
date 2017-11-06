@@ -1,5 +1,7 @@
 package org.oktmr.grafthug.query;
 
+import java.util.Arrays;
+
 import org.oktmr.grafthug.query.exception.IncorrectConditionStructure;
 import org.oktmr.grafthug.query.exception.IncorrectPrefixStructure;
 
@@ -13,8 +15,12 @@ class QueryTest {
                 + "WHERE {?x rdf:type ub:Subj18Student .  ?x rdf:type ub:GraduateStudent . ?x rdf:type ub:TeachingAssistant }";
 
         try {
-
-            System.out.println(QueryParser.parse(q));
+        	Query query = QueryParser.parse(q);
+            System.out.println(query);
+            System.out.println(Arrays.asList(query.getVariables()));
+            System.out.println(Arrays.asList(query.getConditions()));
+            System.out.println(Arrays.asList(query.getPrefixes()));
+            
         } catch (IncorrectPrefixStructure | IncorrectConditionStructure e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

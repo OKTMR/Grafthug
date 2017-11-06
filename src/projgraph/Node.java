@@ -53,4 +53,12 @@ public class Node {
 	public HashMap<Node, ArrayList<Edge>> getIndexStructure(){
 		return indexStructure;
 	}
+	
+	/**
+	 * 
+	 * @return pretty print of nodeId
+	 */
+	public String toString() {
+		return "n" + id;
+	}
 }
