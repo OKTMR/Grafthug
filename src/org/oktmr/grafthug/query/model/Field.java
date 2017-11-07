@@ -47,7 +47,7 @@ public class Field<T extends Value> implements Value {
 
     @Override
     public String stringValue() {
-        return name != null ? "?" + name : value.stringValue();
+        return name != null ? "?" + name + "(" + id + ")" : value.stringValue();
 
     }
 

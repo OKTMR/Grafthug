@@ -27,9 +27,14 @@ public class QueryParser {
 
         splitted = splitted[1].split("(?i)\\s+where\\s*", 2);
 
-        HashMap<Integer, Field> variables = extractVariables(splitted[0]);
-        ArrayList<Condition> conditions = extractConditions(prefixes, cleanCurlyBrackets(splitted[1].trim
-                ()));
+        ArrayList<Field> variables = extractVariables(splitted[0]);
+        HashMap<String, Field> variableName = new HashMap<>(variables.size());
+
+        for (Field f : variables) {
+            variableName.put(f.getName(), f);
+        }
+
+        ArrayList<Condition> conditions = extractConditions(prefixes, variableName, cleanCurlyBrackets(splitted[1].trim()));
 
         Query query = new Query();
 
@@ -77,25 +82,23 @@ public class QueryParser {
      * @param variableString raw string containing only the result variables
      * @return a hashmap containing all the variables
      */
-    private static HashMap<Integer, Field> extractVariables(String variableString) {
-        ArrayList<Field> fields = new ArrayList<>();
-        int key = 1;
+    private static ArrayList<Field> extractVariables(String variableString) {
+        int key = 0;
+        ArrayList<Field> variables = new ArrayList<>();
+
         String[] splitted = variableString.split("\\s+");
 
         for (String split : splitted) {
-            fields.add(new Field(Field.getVariableName(split)));
+            variables.add(new Field(key, Field.getVariableName(split)));
+            key++;
         }
-        HashMap<Integer, Field> variables = new HashMap<>();
-        for(Field field : fields) {
-        	variables.put(key, field);
-        	key++;
-        }
+
         return variables;
     }
 
-    private static ArrayList<Condition> extractConditions(HashMap<String, String> prefixes, String conditionString)
-            throws
-            IncorrectConditionStructure {
+    private static ArrayList<Condition> extractConditions(HashMap<String, String> prefixes,
+                                                          HashMap<String, Field> variables, String conditionString)
+            throws IncorrectConditionStructure {
         ArrayList<Condition> conditions = new ArrayList<>();
 
         String[] splittedConditions = conditionString.split("\\s+\\.\\s+|\\s+\\.|\\.\\s+");
@@ -107,7 +110,13 @@ public class QueryParser {
             String subject = condSplit[0];
             Field<Resource> subjectField;
             if (Field.isVariable(subject)) {
-                subjectField = new Field<>(Field.getVariableName(subject));
+                String var = Field.getVariableName(subject);
+                if (variables.containsKey(var))
+                    subjectField = variables.get(var);
+                else {
+                    subjectField = new Field<>(variables.size(), var);
+                    variables.put(var, subjectField);
+                }
             } else {
                 String split[] = subject.split(":");
                 if (split.length > 1) {
@@ -122,7 +131,13 @@ public class QueryParser {
             String predicate = condSplit[1];
             Field<URI> predicateField;
             if (Field.isVariable(predicate)) {
-                predicateField = new Field<>(Field.getVariableName(predicate));
+                String var = Field.getVariableName(predicate);
+                if (variables.containsKey(var))
+                    predicateField = variables.get(var);
+                else {
+                    predicateField = new Field<>(variables.size(), var);
+                    variables.put(var, predicateField);
+                }
             } else {
                 String split[] = predicate.split(":");
                 if (split.length > 1) {
@@ -137,7 +152,13 @@ public class QueryParser {
             String object = condSplit[2];
             Field<Value> objectField;
             if (Field.isVariable(object)) {
-                objectField = new Field<>(Field.getVariableName(object));
+                String var = Field.getVariableName(object);
+                if (variables.containsKey(var))
+                    objectField = variables.get(var);
+                else {
+                    objectField = new Field<>(variables.size(), var);
+                    variables.put(var, objectField);
+                }
             } else {
                 String split[] = object.split(":");
                 if (split.length > 1) {

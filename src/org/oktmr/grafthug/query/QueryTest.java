@@ -18,18 +18,15 @@ class QueryTest {
         try {
         	Query query = QueryParser.parse(q);
             System.out.println(query);
-            System.out.println(Arrays.asList(query.getVariables()));
-            System.out.println(Arrays.asList(query.getConditions()));
-            System.out.println(Arrays.asList(query.getPrefixes()));
+            System.out.println((query.getVariables()));
+            System.out.println((query.getConditions()));
+            System.out.println((query.getPrefixes()));
             ArrayList<Condition> conds = query.getConditions();
             for(Condition cond : conds) {
             	int idVar = 1;
-            	if(cond.getSubject().isVariable()) {
-            		cond.setSubject(idVar);
-            	}
             }
             System.out.println(conds);
-            
+
         } catch (IncorrectPrefixStructure | IncorrectConditionStructure e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
