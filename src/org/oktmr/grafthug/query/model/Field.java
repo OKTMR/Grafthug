@@ -4,17 +4,25 @@ package org.oktmr.grafthug.query.model;
  *
  */
 public class Field<T extends Value> implements Value {
+    private int id;
     private String name;
     private T value;
+
+    private int hash;
 
     public Field(T value) {
         this.name = null;
         this.value = value;
+
+        hash = value.hashCode();
     }
 
-    public Field(String name) {
+    public Field(int id, String name) {
         this.value = null;
         this.name = name;
+        this.id = id;
+
+        hash = name.hashCode();
     }
 
     public static String getVariableName(String var) {
@@ -29,6 +37,14 @@ public class Field<T extends Value> implements Value {
         return name != null;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     @Override
     public String stringValue() {
         return name != null ? "?" + name : value.stringValue();
@@ -40,4 +56,22 @@ public class Field<T extends Value> implements Value {
         return this.stringValue();
     }
 
+    @Override
+    public int hashCode() {
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Field)) return false;
+
+        Field fd = (Field) obj;
+
+        if (this == fd) return true;
+
+        if (name == null && value.equals(fd.value)) return true;
+        else if (id == fd.id) return true;
+
+        return false;
+    }
 }
