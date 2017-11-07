@@ -14,6 +14,15 @@ public class Node {
 		linkIn = new HashMap<>();
 		linkOut = new HashMap<>();
 	}
+	
+	/**
+	 * 
+	 * @return id of Node
+	 */
+	public int getId() {
+		return id;
+	}
+	
 	/**
 	 * this is a object
 	 * nodeOut is a subject
@@ -52,6 +61,22 @@ public class Node {
 	 */
 	public HashMap<Node, ArrayList<Edge>> getIndexStructure(){
 		return indexStructure;
+	}
+	
+	/**
+	 * @param predicate Edge
+	 * @return Set of nodes
+	 */
+	public ArrayList<Node> requestIndexStructure(Edge predicate) {
+		ArrayList<Node> results = new ArrayList<>();
+		for (Entry<Node, ArrayList<Edge>> value : indexStructure.entrySet()) {
+			for(Edge e : value.getValue()) {
+				if(e.equals(predicate)) {
+					results.add(value.getKey());
+				}
+			}
+	    }
+		return results;
 	}
 	
 	/**
