@@ -1,14 +1,23 @@
 package projgraph;
 
+import org.oktmr.grafthug.query.Condition;
+import org.oktmr.grafthug.query.Query;
+import org.oktmr.grafthug.query.QueryParser;
+import org.oktmr.grafthug.query.exception.IncorrectConditionStructure;
+import org.oktmr.grafthug.query.exception.IncorrectPrefixStructure;
+import org.openrdf.model.Statement;
+import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandlerException;
+import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.Rio;
+import org.openrdf.rio.helpers.RDFHandlerBase;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-
-import org.openrdf.model.Statement;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.Rio;
-import org.openrdf.rio.helpers.RDFHandlerBase;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public final class RDFRawParser {
 

@@ -49,11 +49,8 @@ public class Node {
      */
     public void createIndex() {
         for (Entry<Edge, HashSet<Node>> entry : linkOut.entrySet()) {
-            HashSet<Node> node = entry.getValue();
-            Edge edge = entry.getKey();
-            Iterator<Node> iterator = node.iterator();
-            while (iterator.hasNext()) {
-                indexStructure.computeIfAbsent(iterator.next(), k -> new ArrayList<Edge>()).add(edge);
+            for (Node node : entry.getValue()) {
+                indexStructure.computeIfAbsent(node, k -> new ArrayList<>()).add(entry.getKey());
             }
         }
     }

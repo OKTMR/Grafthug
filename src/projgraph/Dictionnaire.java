@@ -63,9 +63,7 @@ public class Dictionnaire {
      */
     public void index() {
         for (Node node : nodes.values()) {
-            HashMap<Node, ArrayList<Edge>> indexStructure = new HashMap<>();
             node.createIndex();
-            indexStructure = node.getIndexStructure();
             //System.out.print("IndexStructure of Node " + node + " : ");
             //System.out.println(node.getIndexStructure());
         }
