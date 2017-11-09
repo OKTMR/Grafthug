@@ -8,13 +8,12 @@ import java.util.Map;
 
 public class Query {
     private HashMap<String, String> prefixes;
-    private HashMap<Integer, Field> variables;
-    private ArrayList<Field> fields;
+    private ArrayList<Field> variables;
     private ArrayList<Condition> conditions;
 
     public Query() {
         prefixes = new HashMap<>();
-        variables = new HashMap<>();
+        variables = new ArrayList<>();
         conditions = new ArrayList<>();
     }
 
@@ -39,12 +38,12 @@ public class Query {
         this.conditions.addAll(conditions);
     }
 
-    public void addVariables(HashMap<Integer, Field> variables) {
-        this.variables.putAll(variables);
+    public void addVariables(ArrayList<Field> variables) {
+        this.variables.addAll(variables);
     }
-    
+
     /*Getters*/
-    
+
     public HashMap<String, String> getPrefixes() {
         return prefixes;
     }
@@ -53,11 +52,10 @@ public class Query {
         return conditions;
     }
 
-    public HashMap<Integer, Field> getVariables() {
+    public ArrayList<Field> getVariables() {
         return variables;
     }
-    
-    
+
 
     @Override
     public String toString() {
@@ -68,9 +66,11 @@ public class Query {
         }
 
         st.append("\n\rSELECT ");
-        for (Field status : variables.values()) {
+
+        for (Field status : variables) {
             st.append(status.stringValue()).append(" ");
         }
+
         st.append("WHERE {\r\n");
 
         for (Condition condition : conditions) {

@@ -18,6 +18,13 @@ public class Node {
     }
 
     /**
+     * @return id of Node
+     */
+    public int getId() {
+        return id;
+    }
+
+    /**
      * this is a object
      * nodeOut is a subject
      */
@@ -42,8 +49,11 @@ public class Node {
      */
     public void createIndex() {
         for (Entry<Edge, HashSet<Node>> entry : linkOut.entrySet()) {
-            for (Node node : entry.getValue()) {
-                indexStructure.computeIfAbsent(node, k -> new ArrayList<>()).add(entry.getKey());
+            HashSet<Node> node = entry.getValue();
+            Edge edge = entry.getKey();
+            Iterator<Node> iterator = node.iterator();
+            while (iterator.hasNext()) {
+                indexStructure.computeIfAbsent(iterator.next(), k -> new ArrayList<Edge>()).add(edge);
             }
         }
     }
@@ -56,9 +66,39 @@ public class Node {
     }
 
     /**
+     * @param predicate Edge
+     * @return Set of nodes
+     */
+    public ArrayList<Node> requestIndexStructure(Edge predicate) {
+        ArrayList<Node> results = new ArrayList<>();
+        for (Entry<Node, ArrayList<Edge>> value : indexStructure.entrySet()) {
+            for (Edge e : value.getValue()) {
+                if (e.equals(predicate)) {
+                    results.add(value.getKey());
+                }
+            }
+        }
+        return results;
+    }
+
+    /**
      * @return pretty print of nodeId
      */
     public String toString() {
         return "n" + id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Node)) return false;
+
+        Node n = (Node) obj;
+
+        return this == n || id == n.id;
     }
 }

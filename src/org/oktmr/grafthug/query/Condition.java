@@ -16,13 +16,17 @@ public class Condition {
         this.object = object;
 
     }
-    
+
     public Field<Resource> getSubject() {
-    	return subject;
+        return subject;
     }
-    
-    public Field<Resource> setSubject(int id) {
-    	return subject;
+
+    public Field<URI> getPredicate() {
+        return predicate;
+    }
+
+    public Field<Value> getObject() {
+        return object;
     }
 
     public String toString() {

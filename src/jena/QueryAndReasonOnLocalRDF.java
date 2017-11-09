@@ -23,12 +23,12 @@ import com.hp.hpl.jena.util.PrintUtil;
 public class QueryAndReasonOnLocalRDF {
 
 	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
-		
-		/**
-		 * 
+
+		/*
+		 *
 		 * Test query
-		 * 
-		 * 
+		 *
+		 *
 		 */
 
 		String test = " PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
@@ -36,7 +36,7 @@ public class QueryAndReasonOnLocalRDF {
 				+ " PREFIX  owl: <http://www.w3.org/2002/07/owl#>"
 				+ " SELECT distinct ?s"
 				+ " WHERE { ?s ?p ?o }";
-		
+
 		String q = " PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
 			+	"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
 			+	"PREFIX owl: <http://www.w3.org/2002/07/owl#>"
@@ -45,10 +45,10 @@ public class QueryAndReasonOnLocalRDF {
 			+	"WHERE {?x rdf:type ub:Subj18Student .  ?x rdf:type ub:GraduateStudent . ?x rdf:type ub:TeachingAssistant }";
 
 
-		/**
-		 * 
+		/*
+		 *
 		 * Create a data model and load file
-		 * 
+		 *
 		 */
 
 		Model model = ModelFactory.createDefaultModel();
@@ -63,10 +63,10 @@ public class QueryAndReasonOnLocalRDF {
 
 		System.out.println("Import time : " + (System.currentTimeMillis() - start));
 
-		/**
-		 * 
+		/*
+		 *
 		 * Create a query object
-		 * 
+		 *
 		 */
 
 		Query query = QueryFactory.create(q);
@@ -77,10 +77,10 @@ public class QueryAndReasonOnLocalRDF {
 
 		System.out.println("Query pre-processing time : " + (System.currentTimeMillis() - start));
 
-		/**
-		 * 
+		/*
+		 *
 		 * Execute Query and print result
-		 * 
+		 *
 		 */
 		start = System.currentTimeMillis();
 
@@ -97,6 +97,6 @@ public class QueryAndReasonOnLocalRDF {
 
 		System.out.println("Query + Display time : " + (System.currentTimeMillis() - start));
 
-	
+
 	}
 }
