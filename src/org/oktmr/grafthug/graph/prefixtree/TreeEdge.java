@@ -32,6 +32,20 @@ public class TreeEdge extends Edge {
         this.treeNodes = new HashSet<>();
     }
 
+
+    /**
+     * Insert the actual object as the lesser one
+     *
+     * @param treeEdge greater Edge than the actual one
+     */
+    public void insertBefore(TreeEdge treeEdge) {
+        setLesser(treeEdge.getLesser());
+        setGreater(treeEdge);
+
+        getLesser().setGreater(this);
+        getGreater().setLesser(this);
+    }
+
     /**
      * @return true if has a next element
      */
@@ -81,6 +95,4 @@ public class TreeEdge extends Edge {
     public void setGreater(TreeEdge greater) {
         this.greater = greater;
     }
-
-
 }
