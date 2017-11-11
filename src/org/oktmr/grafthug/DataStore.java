@@ -1,4 +1,4 @@
-package projgraph;
+package org.oktmr.grafthug;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,8 +14,8 @@ public class DataStore {
     }
 
     /**
-     * Add index of subject and object to Node
-     * Add index of predicate to Edge
+     * Add index of subject and object to TreeNode
+     * Add index of predicate to TreeEdge
      * Can be used as a getter to translate query in nodeId/edgeId
      *
      * @param value of subject, object or predicate
