@@ -32,7 +32,7 @@ public final class Main {
     public static void main(String args[]) throws Exception {
         // beginning indexation
         indexation(filePath);
-
+        //dico.index();
         System.out.println("Number of treeNodes : " + dico.getNodes().size());
         System.out.println("Number of edges : " + dico.getEdges().size());
 
