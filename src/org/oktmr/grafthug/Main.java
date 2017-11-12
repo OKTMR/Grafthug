@@ -1,5 +1,6 @@
 package org.oktmr.grafthug;
 
+import org.oktmr.grafthug.graph.prefixtree.Manager;
 import org.oktmr.grafthug.graph.rdf.Dictionnaire;
 import org.oktmr.grafthug.graph.rdf.RdfEdge;
 import org.oktmr.grafthug.graph.rdf.RdfNode;
@@ -19,6 +20,7 @@ public final class Main {
 
     private static final DataStore ds = new DataStore();
     private static final Dictionnaire dico = new Dictionnaire();
+    private static final Manager manager = new Manager();
 
 
     static String queryString = " PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
@@ -33,7 +35,7 @@ public final class Main {
         // beginning indexation
         indexation(filePath);
         //dico.index();
-        System.out.println("Number of treeNodes : " + dico.getNodes().size());
+        System.out.println("Number of treeNodes : " + manager.treeNodes.size());
         System.out.println("Number of edges : " + dico.getEdges().size());
 
         Query query = QueryParser.parse(queryString);
@@ -84,6 +86,12 @@ public final class Main {
 
         rdfParser.parse(reader, "");
         reader.close();
+
+        dico.index();
+
+        for (RdfNode rdfNode : dico.nodes.values()) {
+            manager.add(rdfNode);
+        }
     }
 
     private static class RDFListener extends RDFHandlerBase {

@@ -7,25 +7,17 @@ import java.util.HashSet;
 public class TreeEdge extends Edge {
     private HashSet<TreeNode> treeNodes;
 
+    private int parent;
+
     /**
      * TreeEdge less than this one on the same branch
      */
-    private TreeEdge lesser = null;
+    private TreeEdge previous = null;
 
     /**
      * TreeEdge bigger than this one on the same branch
      */
-    private TreeEdge greater = null;
-
-    /**
-     * next TreeEdge object with the same Id
-     */
     private TreeEdge next = null;
-
-    /**
-     * prevoious TreeEdge with the same Id
-     */
-    private TreeEdge previous = null;
 
     TreeEdge(int id) {
         super(id);
@@ -34,45 +26,45 @@ public class TreeEdge extends Edge {
 
 
     /**
-     * Insert the actual object as the lesser one
+     * Insert the actual object as the previous one
      *
-     * @param treeEdge greater Edge than the actual one
+     * @param treeEdge next Edge than the actual one
      */
     public void insertBefore(TreeEdge treeEdge) {
-        setLesser(treeEdge.getLesser());
-        setGreater(treeEdge);
+        setPrevious(treeEdge.previous());
+        setNext(treeEdge);
 
-        getLesser().setGreater(this);
-        getGreater().setLesser(this);
+        previous().setNext(this);
+        next().setPrevious(this);
     }
 
     /**
-     * @return true if has a next element
+     * Insert the actual object as the next one
+     *
+     * @param treeEdge previous Edge than the actual one
+     */
+    public void insertAfter(TreeEdge treeEdge) {
+        if (treeEdge.hasNext()) {
+            setNext(treeEdge.next());
+            next().setPrevious(this);
+        }
+
+        setPrevious(treeEdge);
+        previous().setNext(this);
+    }
+
+    /**
+     * @return true if has a next edge
      */
     public boolean hasNext() {
         return next != null;
-    }
-
-    /**
-     * @return true if has a greater edge
-     */
-    public boolean hasGreater() {
-        return greater != null;
     }
 
     public void add(TreeNode treeNode) {
         treeNodes.add(treeNode);
     }
 
-    public TreeEdge getNext() {
-        return next;
-    }
-
-    public void setNext(TreeEdge next) {
-        this.next = next;
-    }
-
-    public TreeEdge getPrevious() {
+    public TreeEdge previous() {
         return previous;
     }
 
@@ -80,19 +72,24 @@ public class TreeEdge extends Edge {
         this.previous = previous;
     }
 
-    public TreeEdge getLesser() {
-        return lesser;
+    public TreeEdge next() {
+        return next;
     }
 
-    public void setLesser(TreeEdge lesser) {
-        this.lesser = lesser;
+    public void setNext(TreeEdge next) {
+        this.next = next;
     }
 
-    public TreeEdge getGreater() {
-        return greater;
+    int getParent() {
+        return parent;
     }
 
-    public void setGreater(TreeEdge greater) {
-        this.greater = greater;
+    public void setParent(int parent) {
+        this.parent = parent;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ":" + treeNodes.size();
     }
 }

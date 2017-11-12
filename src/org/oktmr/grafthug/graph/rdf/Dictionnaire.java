@@ -60,8 +60,6 @@ public class Dictionnaire {
 
     /**
      * Call TreeNode.createIndex() for each node of HashMap treeNodes to get each neighbords of a node.
-     *
-     * @deprecated
      */
     public void index() {
         for (RdfNode rdfNode : nodes.values()) {

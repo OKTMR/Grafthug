@@ -3,7 +3,6 @@ package org.oktmr.grafthug.graph.rdf;
 import org.oktmr.grafthug.graph.Node;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -30,7 +29,7 @@ public class RdfNode extends Node {
     /**
      * this is a subject
      *
-     * @param edge   is edge between the treeNodes
+     * @param edge      is edge between the treeNodes
      * @param rdfNodeIn is a object
      */
     public void addLinkIn(RdfEdge edge, RdfNode rdfNodeIn) {
@@ -48,18 +47,7 @@ public class RdfNode extends Node {
                 indexStructure.computeIfAbsent(rdfNode, k -> new ArrayList<>()).add(entry.getKey());
             }
         }
-        sortIndex();
-    }
-    /**
-     * Sort an indexstructure
-     * @return indexed sorted graph of node
-     */
-    public void sortIndex() {
-    	for (Entry<RdfNode, ArrayList<RdfEdge>> entry : indexStructure.entrySet()) {
-    		ArrayList<RdfEdge> edgesSorted = entry.getValue();
-    		Collections.sort(edgesSorted);
-    		indexStructure.replace(entry.getKey(), entry.getValue(), edgesSorted);
-    	}
+        indexStructure.values().forEach(list -> list.sort(null));
     }
 
     /**
