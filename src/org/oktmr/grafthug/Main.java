@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -56,17 +57,11 @@ public final class Main {
             // condition
             RdfNode indexNode = dico.getNode(ds.getIndex(cond.getObject().stringValue())); // Return node
             // (object) of a condition
-            queryGraph.computeIfAbsent(indexNode, k -> new ArrayList<>()).add(predicate);
-
-            //ArrayList<RdfNode> subjects = indexNode.requestIndexStructure(predicate);
-
-            /*if (results.isEmpty()) {
-                results.addAll(subjects);
-            } else {
-                results.removeIf(result -> !subjects.contains(result));
-            }*/
+            if(predicate != null && indexNode !=  null) {
+            	queryGraph.computeIfAbsent(indexNode, k -> new ArrayList<>()).add(predicate);
+            }
         }
-
+        System.out.println("IndexConditions : " + Arrays.asList(queryGraph));
         HashSet<TreeNode> results = manager.evaluate(queryGraph);
         ArrayList<String> finalResults = new ArrayList<>(results.size());
         for (TreeNode result : results) {
