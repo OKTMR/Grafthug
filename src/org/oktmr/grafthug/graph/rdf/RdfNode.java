@@ -58,6 +58,7 @@ public class RdfNode extends Node {
     }
 
     /**
+     * @deprecated
      * @param predicate TreeEdge
      * @return Set of treeNodes
      */

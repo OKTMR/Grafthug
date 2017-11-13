@@ -15,6 +15,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public final class Main {
 
@@ -46,21 +47,24 @@ public final class Main {
 
         // fin du pretraitement
         ArrayList<RdfNode> results = new ArrayList<>();
+        HashMap<RdfNode,ArrayList<RdfEdge>> queryGraph = new HashMap<>();
         for (Condition cond : conds) {
             RdfEdge predicate = dico.getEdge(ds.getIndex(cond.getPredicate().stringValue())); // Return edge
             // (predicate) of a
             // condition
             RdfNode indexNode = dico.getNode(ds.getIndex(cond.getObject().stringValue())); // Return node
             // (object) of a condition
-            ArrayList<RdfNode> subjects = indexNode.requestIndexStructure(predicate);
+            queryGraph.computeIfAbsent(indexNode, k -> new ArrayList<>()).add(predicate);
+            
+            //ArrayList<RdfNode> subjects = indexNode.requestIndexStructure(predicate);
 
-            if (results.isEmpty()) {
+            /*if (results.isEmpty()) {
                 results.addAll(subjects);
             } else {
                 results.removeIf(result -> !subjects.contains(result));
-            }
+            }*/
         }
-
+        
         ArrayList<String> finalResults = new ArrayList<>();
         for (RdfNode result : results) {
             finalResults.add(ds.getValue(result.getId()));
