@@ -10,7 +10,6 @@ public class TreeNode extends Node {
     private final HashMap<Integer, TreeEdge> prefixTree = new HashMap<>(); //yolo
     private final HashMap<Integer, LinkedList<TreeEdge>> edges = new HashMap<>();
 
-
     public TreeNode(int id) {
         super(id);
     }
@@ -143,10 +142,22 @@ public class TreeNode extends Node {
         }
     }
 
+    public HashMap<Integer, TreeEdge> getPrefixTree() {
+        return prefixTree;
+    }
+
+    public HashMap<Integer, LinkedList<TreeEdge>> getEdges() {
+        return edges;
+    }
+
     /**
      * @return pretty print of nodeId
      */
     public String toString() {
         return "{" + super.toString() + ", e=" + edges.values() + ", p=" + prefixTree.values() + "}";
+    }
+
+    public LinkedList<TreeEdge> getEdge(int lastEdge) {
+        return edges.get(lastEdge);
     }
 }

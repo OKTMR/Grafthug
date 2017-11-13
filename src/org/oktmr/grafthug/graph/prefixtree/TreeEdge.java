@@ -92,4 +92,12 @@ public class TreeEdge extends Edge {
     public String toString() {
         return super.toString() + ":" + treeNodes.size();
     }
+
+    public HashSet<TreeNode> getNodes() {
+        return treeNodes;
+    }
+
+    public boolean hasPrevious() {
+        return previous != null;
+    }
 }
