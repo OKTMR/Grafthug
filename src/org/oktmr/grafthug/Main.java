@@ -1,6 +1,7 @@
 package org.oktmr.grafthug;
 
 import org.oktmr.grafthug.graph.prefixtree.Manager;
+import org.oktmr.grafthug.graph.prefixtree.TreeNode;
 import org.oktmr.grafthug.graph.rdf.Dictionnaire;
 import org.oktmr.grafthug.graph.rdf.RdfEdge;
 import org.oktmr.grafthug.graph.rdf.RdfNode;
@@ -14,8 +15,10 @@ import org.openrdf.rio.helpers.RDFHandlerBase;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public final class Main {
 
@@ -46,8 +49,7 @@ public final class Main {
         ArrayList<Condition> conds = query.getConditions();
 
         // fin du pretraitement
-        ArrayList<RdfNode> results = new ArrayList<>();
-        HashMap<RdfNode,ArrayList<RdfEdge>> queryGraph = new HashMap<>();
+        HashMap<RdfNode, ArrayList<RdfEdge>> queryGraph = new HashMap<>();
         for (Condition cond : conds) {
             RdfEdge predicate = dico.getEdge(ds.getIndex(cond.getPredicate().stringValue())); // Return edge
             // (predicate) of a
@@ -55,7 +57,7 @@ public final class Main {
             RdfNode indexNode = dico.getNode(ds.getIndex(cond.getObject().stringValue())); // Return node
             // (object) of a condition
             queryGraph.computeIfAbsent(indexNode, k -> new ArrayList<>()).add(predicate);
-            
+
             //ArrayList<RdfNode> subjects = indexNode.requestIndexStructure(predicate);
 
             /*if (results.isEmpty()) {
@@ -64,11 +66,13 @@ public final class Main {
                 results.removeIf(result -> !subjects.contains(result));
             }*/
         }
-        
-        ArrayList<String> finalResults = new ArrayList<>();
-        for (RdfNode result : results) {
+
+        HashSet<TreeNode> results = manager.evaluate(queryGraph);
+        ArrayList<String> finalResults = new ArrayList<>(results.size());
+        for (TreeNode result : results) {
             finalResults.add(ds.getValue(result.getId()));
         }
+
         System.out.println("Resultat de la requete : " + finalResults);
 
 
