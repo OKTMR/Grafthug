@@ -42,7 +42,7 @@ public class DataStore {
         return values.get(id);
     }
 
-    public int getIndex(String value) {
+    public Integer getIndex(String value) {
         return valueIndexes.get(value);
     }
 

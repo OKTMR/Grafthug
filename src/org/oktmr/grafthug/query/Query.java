@@ -17,21 +17,8 @@ public class Query {
         conditions = new ArrayList<>();
     }
 
-    public boolean addPrefix(String name, String namespace) {
-        if (prefixes.containsKey(name)) {
-            return false;
-        }
-        prefixes.put(name, namespace);
-        return true;
-    }
-
     public void addPrefixes(HashMap<String, String> prefixes) {
         this.prefixes.putAll(prefixes);
-    }
-
-
-    public void addCondition(Condition condition) {
-        conditions.add(condition);
     }
 
     public void addConditions(ArrayList<Condition> conditions) {
@@ -62,10 +49,10 @@ public class Query {
         StringBuilder st = new StringBuilder();
 
         for (Map.Entry<String, String> entry : prefixes.entrySet()) {
-            st.append("PREFIX\t").append(entry.getKey()).append(":\t").append(entry.getValue()).append("\n\r");
+            st.append("PREFIX\t").append(entry.getKey()).append(":\t").append(entry.getValue()).append("\r\n");
         }
 
-        st.append("\n\rSELECT ");
+        st.append("\r\nSELECT ");
 
         for (Field status : variables) {
             st.append(status.stringValue()).append(" ");

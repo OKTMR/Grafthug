@@ -23,7 +23,7 @@ public class RdfNode extends Node {
      * rdfNodeOut is a subject
      */
     public void addLinkOut(RdfEdge edge, RdfNode rdfNodeOut) {
-        linkOut.computeIfAbsent(edge, k -> new HashSet<RdfNode>()).add(rdfNodeOut);
+        linkOut.computeIfAbsent(edge, k -> new HashSet<>()).add(rdfNodeOut);
     }
 
     /**
@@ -33,7 +33,7 @@ public class RdfNode extends Node {
      * @param rdfNodeIn is a object
      */
     public void addLinkIn(RdfEdge edge, RdfNode rdfNodeIn) {
-        linkIn.computeIfAbsent(edge, k -> new HashSet<RdfNode>()).add(rdfNodeIn);
+        linkIn.computeIfAbsent(edge, k -> new HashSet<>()).add(rdfNodeIn);
     }
 
     /**
@@ -48,29 +48,5 @@ public class RdfNode extends Node {
             }
         }
         indexStructure.values().forEach(list -> list.sort(null));
-    }
-
-    /**
-     * @return indexed graph of node
-     */
-    public HashMap<RdfNode, ArrayList<RdfEdge>> getIndexStructure() {
-        return indexStructure;
-    }
-
-    /**
-     * @deprecated
-     * @param predicate TreeEdge
-     * @return Set of treeNodes
-     */
-    public ArrayList<RdfNode> requestIndexStructure(RdfEdge predicate) {
-        ArrayList<RdfNode> results = new ArrayList<>();
-        for (Entry<RdfNode, ArrayList<RdfEdge>> value : indexStructure.entrySet()) {
-            for (RdfEdge e : value.getValue()) {
-                if (e.equals(predicate)) {
-                    results.add(value.getKey());
-                }
-            }
-        }
-        return results;
     }
 }

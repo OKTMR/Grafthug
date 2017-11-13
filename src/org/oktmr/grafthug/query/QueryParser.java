@@ -18,7 +18,7 @@ public class QueryParser {
      * @throws IncorrectPrefixStructure if the prefixes are incorrect
      */
     public static Query parse(String queryString) throws IncorrectPrefixStructure, IncorrectConditionStructure {
-        String[] splitted = queryString.split("(?i)\\s+select\\s+", 2);
+        String[] splitted = queryString.split("(?i)\\s*select\\s+", 2);
         HashMap<String, String> prefixes = new HashMap<>();
 
         if (splitted.length > 1) {
@@ -105,7 +105,10 @@ public class QueryParser {
 
         for (String splitCondition : splittedConditions) {
             String condSplit[] = splitCondition.split("\\s+");
-            if (condSplit.length > 3) throw new IncorrectConditionStructure();
+            if (condSplit.length > 3) {
+                System.err.println(Arrays.toString(condSplit));
+                throw new IncorrectConditionStructure();
+            }
 
             String subject = condSplit[0];
             Field<Resource> subjectField;
@@ -118,14 +121,17 @@ public class QueryParser {
                     variables.put(var, subjectField);
                 }
             } else {
-                String split[] = subject.split(":");
-                if (split.length > 1) {
-                    subjectField = new Field<>(new URI(prefixes.get(split[0]) + split[1]));
-                } else if (subject.charAt(0) == '<') {
+                if (subject.charAt(0) == '<') {
                     subjectField = new Field<>(new URI(URI.cleanAngleQuotes(subject)));
                 } else {
-                    throw new IncorrectConditionStructure();
+                    String split[] = subject.split(":");
+                    if (split.length > 1) {
+                        subjectField = new Field<>(new URI(prefixes.get(split[0]) + split[1]));
+                    } else {
+                        throw new IncorrectConditionStructure();
+                    }
                 }
+
             }
 
             String predicate = condSplit[1];
@@ -139,13 +145,15 @@ public class QueryParser {
                     variables.put(var, predicateField);
                 }
             } else {
-                String split[] = predicate.split(":");
-                if (split.length > 1) {
-                    predicateField = new Field<>(new URI(prefixes.get(split[0]) + split[1]));
-                } else if (predicate.charAt(0) == '<') {
+                if (predicate.charAt(0) == '<') {
                     predicateField = new Field<>(new URI(URI.cleanAngleQuotes(predicate)));
                 } else {
-                    throw new IncorrectConditionStructure();
+                    String split[] = predicate.split(":");
+                    if (split.length > 1) {
+                        predicateField = new Field<>(new URI(prefixes.get(split[0]) + split[1]));
+                    } else {
+                        throw new IncorrectConditionStructure();
+                    }
                 }
             }
 
@@ -160,13 +168,15 @@ public class QueryParser {
                     variables.put(var, objectField);
                 }
             } else {
-                String split[] = object.split(":");
-                if (split.length > 1) {
-                    objectField = new Field<>(new URI(prefixes.get(split[0]) + split[1]));
-                } else if (object.charAt(0) == '<') {
+                if (object.charAt(0) == '<') {
                     objectField = new Field<>(new URI(URI.cleanAngleQuotes(object)));
                 } else {
-                    objectField = new Field<>(new Literal(Literal.cleanQuotes(object)));
+                    String split[] = object.split(":");
+                    if (split.length > 1) {
+                        objectField = new Field<>(new URI(prefixes.get(split[0]) + split[1]));
+                    } else {
+                        objectField = new Field<>(new Literal(Literal.cleanQuotes(object)));
+                    }
                 }
             }
 
@@ -180,7 +190,7 @@ public class QueryParser {
 
     public static String cleanCurlyBrackets(String rawString) {
         if (rawString.charAt(0) == '{' && rawString.charAt(rawString.length() - 1) == '}')
-            return rawString.substring(1, rawString.length() - 1);
+            return rawString.substring(1, rawString.length() - 1).trim();
 
         return rawString;
     }

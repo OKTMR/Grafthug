@@ -1,24 +1,26 @@
 package org.oktmr.grafthug;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 import org.oktmr.grafthug.graph.prefixtree.Manager;
+import org.oktmr.grafthug.graph.prefixtree.QueryGraph;
 import org.oktmr.grafthug.graph.prefixtree.TreeNode;
 import org.oktmr.grafthug.graph.rdf.Dictionnaire;
-import org.oktmr.grafthug.graph.rdf.RdfEdge;
 import org.oktmr.grafthug.graph.rdf.RdfNode;
-import org.oktmr.grafthug.query.Condition;
 import org.oktmr.grafthug.query.Query;
 import org.oktmr.grafthug.query.QueryParser;
+import org.oktmr.grafthug.query.exception.IncorrectConditionStructure;
+import org.oktmr.grafthug.query.exception.IncorrectPrefixStructure;
+import org.oktmr.grafthug.time.Chronos;
 import org.openrdf.model.Statement;
 import org.openrdf.rio.*;
 import org.openrdf.rio.helpers.RDFHandlerBase;
 
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public final class Main {
@@ -27,62 +29,45 @@ public final class Main {
     private static final Dictionnaire dico = new Dictionnaire();
     private static final Manager manager = new Manager();
 
+    private static long totalParsingTime = 0;
+    private static long totalPreProcessTime = 0;
+    private static long totalProcessTime = 0;
 
-    static String queryString = " PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> "
-            + "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
-            + "PREFIX owl: <http://www.w3.org/2002/07/owl#>"
-            + "PREFIX ub: <http://swat.cse.lehigh.edu/onto/univ-bench.owl#>" + " SELECT ?x "
-            + "WHERE {?x rdf:type ub:Subj18Student .  ?x rdf:type ub:GraduateStudent . ?x rdf:type ub:TeachingAssistant }";
 
-    static String filePath = "University0_0.owl";
+    @Parameter(names = {"-d", "--debug"}, description = "allow the debug logs to be displayed")
+    private boolean debug = false;
+    @Parameter(names = {"-o", "--output"}, description = "CSV result output file", arity = 1)
+    private String resultPath = "results.csv";
+    @Parameter(names = {"-t", "--timer"}, description = "CSV timer result output file")
+    private String timerFileOut = "timer.csv";
+    @Parameter(names = {"-h", "--help"}, description = "Displays the help", help = true)
+    private boolean help = false;
+    @Parameter(names = {"-r", "--request"}, description = "Unary Request to execute")
+    private String request = null;
+    @Parameter(names = {"-i", "--input"}, description = "Input File for Data")// required = true)
+        private String dataFilePath = "dataset/University0_0.owl.xml";
+    @Parameter(names = {"-q", "--query"}, description = "File that contains requests")
+    private String requestFilePath = "queries/Q_4_location_nationality_gender_type.queryset";
+    private Log timerLog;
+    private Log resultLog;
 
     public static void main(String args[]) throws Exception {
-        // beginning indexation
-        indexation(filePath);
-        //dico.index();
-        System.out.println("Number of treeNodes : " + manager.treeNodes.size());
-        System.out.println("Number of edges : " + dico.getEdges().size());
-
-        Query query = QueryParser.parse(queryString);
-
-        System.out.println(query);
-
-        ArrayList<Condition> conds = query.getConditions();
-
-        // fin du pretraitement
-        HashMap<RdfNode, ArrayList<RdfEdge>> queryGraph = new HashMap<>();
-        for (Condition cond : conds) {
-            RdfEdge predicate = dico.getEdge(ds.getIndex(cond.getPredicate().stringValue())); // Return edge
-            // (predicate) of a
-            // condition
-            RdfNode indexNode = dico.getNode(ds.getIndex(cond.getObject().stringValue())); // Return node
-            // (object) of a condition
-            if(predicate != null && indexNode !=  null) {
-            	queryGraph.computeIfAbsent(indexNode, k -> new ArrayList<>()).add(predicate);
-            }
-        }
-        System.out.println("IndexConditions : " + Arrays.asList(queryGraph));
-        HashSet<TreeNode> results = manager.evaluate(queryGraph);
-        ArrayList<String> finalResults = new ArrayList<>(results.size());
-        for (TreeNode result : results) {
-            finalResults.add(ds.getValue(result.getId()));
-        }
-
-        System.out.println("Resultat de la requete : " + finalResults);
-
-
+        Main main = new Main();
+        JCommander jcommander = JCommander.newBuilder().addObject(main).build();
+        jcommander.parse(args);
+        main.run(jcommander);
     }
 
     /**
      * Indexes the given dataset
      *
-     * @param filePath
-     * @throws IOException
-     * @throws RDFParseException
-     * @throws RDFHandlerException
+     * @param dataFilePath data file path
+     * @throws IOException         if there is an error while reading the file
+     * @throws RDFParseException   if there is an error while parsing the file
+     * @throws RDFHandlerException if there is an error while iterating the data file
      */
-    private static void indexation(String filePath) throws IOException, RDFParseException, RDFHandlerException {
-        Reader reader = new FileReader(filePath);
+    private static void indexation(String dataFilePath) throws IOException, RDFParseException, RDFHandlerException {
+        Reader reader = new FileReader(dataFilePath);
 
         RDFParser rdfParser = Rio.createParser(RDFFormat.RDFXML);
         rdfParser.setRDFHandler(new RDFListener());
@@ -95,6 +80,98 @@ public final class Main {
         for (RdfNode rdfNode : dico.nodes.values()) {
             manager.add(rdfNode);
         }
+    }
+
+    private void run(JCommander jcommander) throws IOException, RDFParseException, RDFHandlerException, IncorrectPrefixStructure, IncorrectConditionStructure {
+        if (help) { // displays the help
+            jcommander.usage();
+            return;
+        }
+        timerLog = new Log(timerFileOut);
+        timerLog.debug();
+        resultLog = new Log(resultPath);
+        if (debug) {
+            resultLog.debug();
+        }
+
+        // beginning indexation
+        Chronos chronoIndex =
+                Chronos.start("Indexation");
+        indexation(dataFilePath);
+        chronoIndex.stop();
+        timerLog.log(chronoIndex);
+
+        System.out.println("Number of treeNodes; " + manager.treeNodes.size());
+        System.out.println("Number of edges; " + dico.getEdges().size());
+
+        timerLog.log("Query n°", "Parsing", "Pre-Process", "Evaluation");
+
+        if (request == null) {
+            parseFile(requestFilePath);
+        } else {
+            exec(1, request);
+        }
+
+        timerLog.log("Total Parsing", String.valueOf(Chronos.toMillis(totalParsingTime)));
+        timerLog.log("Total Pre-process", String.valueOf(Chronos.toMillis(totalPreProcessTime)));
+        timerLog.log("Total Process", String.valueOf(Chronos.toMillis(totalProcessTime)));
+    }
+
+    private void parseFile(String requestFilePath) throws IOException, IncorrectPrefixStructure, IncorrectConditionStructure {
+        BufferedReader reader = new BufferedReader(new FileReader(requestFilePath));
+
+        StringBuilder sb = new StringBuilder();
+        String line;
+        int iterator = 1;
+        while ((line = reader.readLine()) != null) {
+            line = line.trim();
+
+            if (line.length() > 1) {
+                sb.append(line);
+
+                if (line.charAt(line.length() - 1) == '}') {
+                    exec(iterator, sb.toString());
+
+                    ++iterator;
+                    sb = new StringBuilder();
+                }
+            }
+        }
+
+        reader.close();
+    }
+
+    private void exec(int queryNumber, String queryString) throws IncorrectPrefixStructure,
+            IncorrectConditionStructure,
+            IOException {
+        ArrayList<String> times = new ArrayList<>(3);
+        Chronos chronoQuery =
+                Chronos.start("Parsing");
+        Query query = QueryParser.parse(queryString);
+        times.add(String.valueOf(Chronos.toMillis(chronoQuery.stop())));
+        totalParsingTime += chronoQuery.duration();
+
+        Chronos chronoPreprocess =
+                Chronos.start("Pre-process");
+        QueryGraph queryGraph = new QueryGraph(ds, query);
+        times.add(String.valueOf(Chronos.toMillis(chronoPreprocess.stop())));
+        totalPreProcessTime += chronoPreprocess.duration();
+
+        Chronos chronoProcess =
+                Chronos.start("Process");
+        HashSet<TreeNode> results = manager.evaluate(queryGraph);
+        times.add(String.valueOf(Chronos.toMillis(chronoProcess.stop())));
+        totalProcessTime += chronoProcess.duration();
+
+
+        timerLog.log("Q" + queryNumber, times);
+        timerLog.flush();
+
+        ArrayList<String> finalResults = new ArrayList<>(results.size());
+        for (TreeNode result : results) {
+            finalResults.add(ds.getValue(result.getId()));
+        }
+        resultLog.log("Q" + queryNumber, finalResults);
     }
 
     private static class RDFListener extends RDFHandlerBase {
