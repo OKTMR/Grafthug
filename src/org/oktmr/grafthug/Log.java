@@ -29,7 +29,7 @@ public class Log {
 
 
     public void log(String... string) throws IOException {
-        if (debug) System.out.println(String.join(":\t", string));
+        if (debug) System.out.println(String.join("\t", string));
         fileWriter.write(String.join(separator, string));
         fileWriter.newLine();
     }

@@ -30,6 +30,14 @@ public class Chronos {
         return ((double) interval) / 1000000;
     }
 
+    public static String formatMillis(double value) {
+        return String.format("%.6f", value);
+    }
+
+    public static String formatNano(long value) {
+        return String.format("%.6f", toMillis(value));
+    }
+
     public long stop() {
         stop = now();
         isStopped = true;
@@ -58,10 +66,10 @@ public class Chronos {
 
     @Override
     public String toString() {
-        return name + " time : " + toMillis(step());
+        return name + " time : " + formatNano(step());
     }
 
     public String toCSV() {
-        return name + ";" + toMillis(step());
+        return name + ";" + formatNano(step());
     }
 }
