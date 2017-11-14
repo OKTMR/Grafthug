@@ -2,6 +2,7 @@ package org.oktmr.grafthug;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import org.oktmr.grafthug.graph.prefixtree.Manager;
 import org.oktmr.grafthug.graph.prefixtree.QueryGraph;
 import org.oktmr.grafthug.graph.rdf.Dictionnaire;
@@ -33,28 +34,36 @@ public final class Main {
     private static long totalProcessTime = 0;
 
 
-    @Parameter(names = {"-d", "--debug"}, description = "allow the debug logs to be displayed")
+    @Parameter(names = {"-d", "--debug"}, description = "Allows the debug logs to be displayed")
     private boolean debug = false;
     @Parameter(names = {"-o", "--output"}, description = "CSV result output file", arity = 1)
     private String resultPath = "results.csv";
     @Parameter(names = {"-t", "--timer"}, description = "CSV timer result output file")
     private String timerFileOut = "timer.csv";
     @Parameter(names = {"-h", "--help"}, description = "Displays the help", help = true)
-    private boolean help = false;
-    @Parameter(names = {"-r", "--request"}, description = "Unary Request to execute")
+    private boolean help;
+    @Parameter(names = {"-r", "--request"}, description = "Unary Request to execute. Either this or -q is required")
     private String request = null;
-    @Parameter(names = {"-i", "--input"}, description = "Input File for Data")// required = true)
-    private String dataFilePath = "dataset/500K.owl";
-    @Parameter(names = {"-q", "--query"}, description = "File that contains requests")
-    private String requestFilePath = "queries/Q_4_location_nationality_gender_type.queryset";
+    @Parameter(names = {"-i", "--input"}, description = "Input File for Data", required = true)
+    private String dataFilePath = null;
+    @Parameter(names = {"-q", "--query"}, description = "File that contains requests. Either this or -r is required")
+    private String requestFilePath = null;
+
     private Log timerLog;
     private Log resultLog;
 
-    public static void main(String args[]) throws Exception {
+    public static void main(String... args) throws Exception {
         Main main = new Main();
         JCommander jcommander = JCommander.newBuilder().addObject(main).build();
-        jcommander.parse(args);
-        main.run(jcommander);
+        jcommander.setProgramName("grafthug");
+        try {
+            jcommander.parse(args);
+            main.run(jcommander);
+        } catch (ParameterException e) {
+            System.out.println(e.getLocalizedMessage());
+            System.out.println();
+            jcommander.usage();
+        }
     }
 
     /**
@@ -87,9 +96,15 @@ public final class Main {
             jcommander.usage();
             return;
         }
+        if (request == null && requestFilePath == null) {
+            throw new ParameterException("The following option is required: [-r | --request | -q | --query]");
+        }
+
+
         timerLog = new Log(timerFileOut);
-        timerLog.debug();
         resultLog = new Log(resultPath);
+
+        timerLog.debug();
         if (debug) {
             resultLog.debug();
         }
@@ -106,9 +121,9 @@ public final class Main {
 
         timerLog.log("Q n°", "Parsing ", "Pre-Process", "Evaluation");
 
-        if (request == null) {
+        if (requestFilePath != null) {
             parseFile(requestFilePath);
-        } else {
+        } else if (request != null) {
             exec(1, request);
         }
 
@@ -188,7 +203,6 @@ public final class Main {
             // Ajout des index au dictionnaire
             dico.add(indexSubject, indexPredicate, indexObject);
         }
-
     }
 
 }
