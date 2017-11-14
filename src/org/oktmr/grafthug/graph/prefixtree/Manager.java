@@ -1,6 +1,5 @@
 package org.oktmr.grafthug.graph.prefixtree;
 
-import org.oktmr.grafthug.graph.rdf.RdfEdge;
 import org.oktmr.grafthug.graph.rdf.RdfNode;
 
 import java.util.*;
@@ -12,15 +11,21 @@ public class Manager {
         this.treeNodes = new HashMap<>();
     }
 
+    public static HashSet<Integer> retainAll(HashSet<Integer> treeNodes, HashSet<Integer> treeNodes2) {
+        if (treeNodes.size() < treeNodes2.size()) {
+            treeNodes.retainAll(treeNodes2);
+            return treeNodes;
+        } else {
+            treeNodes2.retainAll(treeNodes);
+            return treeNodes2;
+        }
+    }
 
     public void add(RdfNode node) {
         TreeNode treeNode = treeNodes.computeIfAbsent(node.getId(), TreeNode::new);
 
-
-        for (Map.Entry<RdfNode, ArrayList<RdfEdge>> entry : node.indexStructure.entrySet()) {
-            TreeNode iter = treeNodes.computeIfAbsent(entry.getKey().getId(), TreeNode::new);
-
-            treeNode.add(entry.getValue(), iter);
+        for (Map.Entry<Integer, ArrayList<Integer>> entry : node.indexStructure.entrySet()) {
+            treeNode.add(entry.getValue(), entry.getKey());
         }
         // System.out.println("treeNode = " + treeNode);
     }
@@ -30,8 +35,8 @@ public class Manager {
      * @param edges sorted list
      * @return the results found for this iteration
      */
-    public HashSet<TreeNode> findNeighborhood(Integer node, ArrayList<Integer> edges) {
-        HashSet<TreeNode> result = new HashSet<>();
+    public HashSet<Integer> findNeighborhood(int node, ArrayList<Integer> edges) {
+        HashSet<Integer> result = new HashSet<>();
 
         if (!treeNodes.containsKey(node)) {// there is no object named this way.
             return null;
@@ -39,7 +44,7 @@ public class Manager {
 
         TreeNode treeNode = treeNodes.get(node);
 
-        for (Integer edge : edges) { // all the edges are present in the treenode
+        for (int edge : edges) { // all the edges are present in the treenode
             if (!treeNode.getEdges().containsKey(edge)) {
                 return null;
             }
@@ -63,9 +68,9 @@ public class Manager {
      * @param edges    to find if it has this in common
      * @return the nodes which are present
      */
-    public HashSet<TreeNode> crawlUp(TreeEdge treeEdge, ListIterator<Integer> edges) {
+    public HashSet<Integer> crawlUp(TreeEdge treeEdge, ListIterator<Integer> edges) {
 
-        HashSet<TreeNode> nodes = new HashSet<>(treeEdge.getNodes()); // it's surely a part of the solution
+        HashSet<Integer> nodes = new HashSet<>(treeEdge.getNodes()); // it's surely a part of the solution
 
         if (!edges.hasPrevious()) { // first basic case, there is only one edge
             return nodes;
@@ -75,7 +80,7 @@ public class Manager {
         TreeEdge parent = treeEdge.previous();
         int edgeId = edges.previous();
 
-        while (edges.hasPrevious()) {
+        while (true) {
             if (parent.getId() == edgeId) {// it's the same, the two of them go back
                 nodes.retainAll(parent.getNodes()); // we combine the nodes
 
@@ -84,6 +89,9 @@ public class Manager {
                 // there is many edges but the tree stops so not a part of the solution
                     return null;
                 }*/
+                if (!edges.hasPrevious()) {
+                    return nodes;
+                }
 
                 edgeId = edges.previous();
             } else if (parent.getId() < edgeId) {// missing an edge, there is no solution here
@@ -93,18 +101,16 @@ public class Manager {
             parent = parent.previous(); // we continue to iterate over the parents
         }
 
-        return nodes;
     }
 
-
-    public boolean findNeighborhood(Integer node, ArrayList<Integer> edges, HashSet<TreeNode> results) {
+    public boolean findNeighborhood(int node, ArrayList<Integer> edges, HashSet<Integer> results) {
         if (!treeNodes.containsKey(node)) {// there is no object named this way.
             return false;
         }
 
         TreeNode treeNode = treeNodes.get(node);
 
-        for (Integer edge : edges) { // all the edges are present in the treenode
+        for (int edge : edges) { // all the edges are present in the treenode
             if (!treeNode.getEdges().containsKey(edge)) {
                 return false;
             }
@@ -117,23 +123,23 @@ public class Manager {
             if (treeEdge.getParent() > firstEdge) break; // the smallest element is not in the tree
             // we have the guarantee that the tree is bigger than the edges
             // because the smallest element is always in the tree
-            HashSet<TreeNode> toMerge = crawlUp(treeEdge, edges.listIterator(edges.size() - 1));
+            HashSet<Integer> toMerge = crawlUp(treeEdge, edges.listIterator(edges.size() - 1));
             if (toMerge != null) {
-                results.retainAll(toMerge);
+                results = retainAll(results, toMerge);
             }
         }
 
         return true;
     }
 
-    public HashSet<TreeNode> evaluate(QueryGraph query) {
+    public HashSet<Integer> evaluate(QueryGraph query) {
         Iterator<Map.Entry<Integer, ArrayList<Integer>>> iterator = query.iterator();
 
         if (iterator.hasNext()) {
             Map.Entry<Integer, ArrayList<Integer>> entry = iterator.next();
 
             // we get the results of the first query
-            HashSet<TreeNode> results = findNeighborhood(entry.getKey(), entry.getValue());
+            HashSet<Integer> results = findNeighborhood(entry.getKey(), entry.getValue());
 
             if (results == null) {
                 return new HashSet<>(); // <3

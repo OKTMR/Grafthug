@@ -4,7 +4,6 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import org.oktmr.grafthug.graph.prefixtree.Manager;
 import org.oktmr.grafthug.graph.prefixtree.QueryGraph;
-import org.oktmr.grafthug.graph.prefixtree.TreeNode;
 import org.oktmr.grafthug.graph.rdf.Dictionnaire;
 import org.oktmr.grafthug.graph.rdf.RdfNode;
 import org.oktmr.grafthug.query.Query;
@@ -45,7 +44,7 @@ public final class Main {
     @Parameter(names = {"-r", "--request"}, description = "Unary Request to execute")
     private String request = null;
     @Parameter(names = {"-i", "--input"}, description = "Input File for Data")// required = true)
-        private String dataFilePath = "dataset/University0_0.owl.xml";
+    private String dataFilePath = "dataset/500K.owl";
     @Parameter(names = {"-q", "--query"}, description = "File that contains requests")
     private String requestFilePath = "queries/Q_4_location_nationality_gender_type.queryset";
     private Log timerLog;
@@ -161,7 +160,7 @@ public final class Main {
 
         Chronos chronoProcess =
                 Chronos.start("Process");
-        HashSet<TreeNode> results = manager.evaluate(queryGraph);
+        HashSet<Integer> results = manager.evaluate(queryGraph);
         times.add(Chronos.formatNano(chronoProcess.stop()));
         totalProcessTime += chronoProcess.duration();
 
@@ -170,8 +169,8 @@ public final class Main {
         timerLog.flush();
 
         ArrayList<String> finalResults = new ArrayList<>(results.size());
-        for (TreeNode result : results) {
-            finalResults.add(ds.getValue(result.getId()));
+        for (int result : results) {
+            finalResults.add(ds.getValue(result));
         }
         resultLog.log("Q" + String.format("% 2d", queryNumber), finalResults);
     }

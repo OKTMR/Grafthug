@@ -73,7 +73,7 @@ public class Dictionnaire {
         return nodes;
     }
 
-    public RdfNode getNode(Integer index) {
+    public RdfNode getNode(int index) {
         return nodes.get(index);
     }
 
@@ -81,7 +81,7 @@ public class Dictionnaire {
         return edges;
     }
 
-    public RdfEdge getEdge(Integer index) {
+    public RdfEdge getEdge(int index) {
         return edges.get(index);
     }
 }

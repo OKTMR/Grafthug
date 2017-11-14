@@ -5,7 +5,7 @@ import org.oktmr.grafthug.graph.Edge;
 import java.util.HashSet;
 
 public class TreeEdge extends Edge {
-    private HashSet<TreeNode> treeNodes;
+    private HashSet<Integer> treeNodes;
 
     private int parent;
 
@@ -60,7 +60,7 @@ public class TreeEdge extends Edge {
         return next != null;
     }
 
-    public void add(TreeNode treeNode) {
+    public void add(int treeNode) {
         treeNodes.add(treeNode);
     }
 
@@ -93,7 +93,7 @@ public class TreeEdge extends Edge {
         return super.toString() + ":" + treeNodes.size();
     }
 
-    public HashSet<TreeNode> getNodes() {
+    public HashSet<Integer> getNodes() {
         return treeNodes;
     }
 

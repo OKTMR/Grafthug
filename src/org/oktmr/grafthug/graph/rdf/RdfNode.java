@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 public class RdfNode extends Node {
     public HashMap<RdfEdge, HashSet<RdfNode>> linkIn; //edge, nodeIn = object
     public HashMap<RdfEdge, HashSet<RdfNode>> linkOut; //edge, nodeOut = subject
-    public HashMap<RdfNode, ArrayList<RdfEdge>> indexStructure = new HashMap<>(); //yolo
+    public HashMap<Integer, ArrayList<Integer>> indexStructure = new HashMap<>(); //yolo
 
     RdfNode(int id) {
         super(id);
@@ -44,7 +44,7 @@ public class RdfNode extends Node {
     public void createIndex() {
         for (Entry<RdfEdge, HashSet<RdfNode>> entry : linkOut.entrySet()) {
             for (RdfNode rdfNode : entry.getValue()) {
-                indexStructure.computeIfAbsent(rdfNode, k -> new ArrayList<>()).add(entry.getKey());
+                indexStructure.computeIfAbsent(rdfNode.getId(), k -> new ArrayList<>()).add(entry.getKey().getId());
             }
         }
         indexStructure.values().forEach(list -> list.sort(null));

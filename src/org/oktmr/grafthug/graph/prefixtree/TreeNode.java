@@ -1,17 +1,17 @@
 package org.oktmr.grafthug.graph.prefixtree;
 
-import org.oktmr.grafthug.graph.Edge;
 import org.oktmr.grafthug.graph.Node;
-import org.oktmr.grafthug.graph.rdf.RdfEdge;
 
 import java.util.*;
 
 public class TreeNode extends Node {
-    private final HashMap<Integer, TreeEdge> prefixTree = new HashMap<>(); //yolo
-    private final HashMap<Integer, LinkedList<TreeEdge>> edges = new HashMap<>();
+    private final HashMap<Integer, TreeEdge> prefixTree; //yolo
+    private final HashMap<Integer, LinkedList<TreeEdge>> edges;
 
     public TreeNode(int id) {
         super(id);
+        prefixTree = new HashMap<>();
+        edges = new HashMap<>();
     }
 
     /**
@@ -20,23 +20,24 @@ public class TreeNode extends Node {
      * @param edges    sorted edges
      * @param treeNode the node to add
      */
-    public void add(List<RdfEdge> edges, TreeNode treeNode) {
+    public void add(ArrayList<Integer> edges, int treeNode) {
         // edges are already sorted
         // edges.sort(null);
-        if (prefixTree.containsKey(edges.get(0).getId())) {
+        if (prefixTree.containsKey(edges.get(0))) {
             // if the prefix tree contains the first edge of the arraylist
             // then we need to complete it :D
-            TreeEdge treeEdge = prefixTree.get(edges.get(0).getId());
+            TreeEdge treeEdge = prefixTree.get(edges.get(0));
             updateChain(treeEdge, edges.iterator(), treeNode);
         } else {
-            Iterator<RdfEdge> iterator = edges.iterator();
+            Iterator<Integer> iterator = edges.iterator();
 
-            TreeEdge treeEdge = new TreeEdge(edges.get(0).getId());
+            TreeEdge treeEdge = new TreeEdge(edges.get(0));
             treeEdge.add(treeNode);
             treeEdge.setParent(treeEdge.getId());
 
             prefixTree.put(treeEdge.getId(), treeEdge);
             this.edges.computeIfAbsent(treeEdge.getId(), k -> new LinkedList<>()).add(treeEdge);
+
             if (iterator.hasNext()) {
                 iterator.next();
                 fillChain(treeEdge, iterator, treeNode);
@@ -51,12 +52,12 @@ public class TreeNode extends Node {
      * @param iterator iterator over sorted list of edges
      * @param treeNode the node to add to the list
      */
-    public void updateChain(TreeEdge treeEdge, Iterator<RdfEdge> iterator, TreeNode treeNode) {
+    public void updateChain(TreeEdge treeEdge, Iterator<Integer> iterator, int treeNode) {
         if (iterator.hasNext()) {
-            Edge edge = iterator.next();
+            int edge = iterator.next();
 
 
-            if (treeEdge.equals(edge)) { // if the actual iterator is equal to the actual edge
+            if (edge == treeEdge.getId()) { // if the actual iterator is equal to the actual edge
                 treeEdge.add(treeNode);
 
                 if (treeEdge.hasNext()) {// we continue our iteration
@@ -64,9 +65,9 @@ public class TreeNode extends Node {
                 } else { // no next elements, so we need to append them
                     fillChain(treeEdge, iterator, treeNode);
                 }
-            } else if (treeEdge.getId() > edge.getId()) {
+            } else if (edge < treeEdge.getId()) {
                 // if the iterator is less than the actual, that means that there isn't any equal edge
-                TreeEdge toInsertEdge = new TreeEdge(edge.getId());
+                TreeEdge toInsertEdge = new TreeEdge(edge);
                 toInsertEdge.add(treeNode);
                 toInsertEdge.setParent(treeEdge.getParent());
 
@@ -74,12 +75,12 @@ public class TreeNode extends Node {
                 addToEdgeChain(toInsertEdge);
 
                 updateChain(treeEdge, iterator, treeNode);
-            } else if (treeEdge.getId() < edge.getId()) { // if treeEdge edge is smaller
+            } else if (edge > treeEdge.getId()) { // if treeEdge edge is smaller
                 if (treeEdge.hasNext()) { // then we go to the next
                     updateChain(treeEdge.next(), iterator, treeNode);
                 } else {// there is no next
                     // we create it
-                    TreeEdge toInsertEdge = new TreeEdge(edge.getId());
+                    TreeEdge toInsertEdge = new TreeEdge(edge);
                     toInsertEdge.add(treeNode);
                     toInsertEdge.setParent(treeEdge.getParent());
 
@@ -99,10 +100,10 @@ public class TreeNode extends Node {
      * @param iterator array iterator
      * @param treeNode the node to add
      */
-    public void fillChain(TreeEdge treeEdge, Iterator<RdfEdge> iterator, TreeNode treeNode) {
+    public void fillChain(TreeEdge treeEdge, Iterator<Integer> iterator, int treeNode) {
         if (iterator.hasNext()) {
             // creation
-            TreeEdge newChain = new TreeEdge(iterator.next().getId());
+            TreeEdge newChain = new TreeEdge(iterator.next());
             newChain.add(treeNode);
             newChain.setParent(treeEdge.getParent());
 
