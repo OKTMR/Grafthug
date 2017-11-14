@@ -82,7 +82,8 @@ public final class Main {
         }
     }
 
-    private void run(JCommander jcommander) throws IOException, RDFParseException, RDFHandlerException, IncorrectPrefixStructure, IncorrectConditionStructure {
+    private void run(JCommander jcommander) throws IOException, RDFParseException, RDFHandlerException,
+            IncorrectPrefixStructure, IncorrectConditionStructure {
         if (help) { // displays the help
             jcommander.usage();
             return;
@@ -101,10 +102,10 @@ public final class Main {
         chronoIndex.stop();
         timerLog.log(chronoIndex);
 
-        System.out.println("Number of treeNodes; " + manager.treeNodes.size());
-        System.out.println("Number of edges; " + dico.getEdges().size());
+        System.out.println("Number of treeNodes : " + manager.treeNodes.size());
+        System.out.println("Number of edges : " + dico.getEdges().size());
 
-        timerLog.log("Query n°", "Parsing", "Pre-Process", "Evaluation");
+        timerLog.log("Q n°", "Parsing ", "Pre-Process", "Evaluation");
 
         if (request == null) {
             parseFile(requestFilePath);
@@ -112,12 +113,13 @@ public final class Main {
             exec(1, request);
         }
 
-        timerLog.log("Total Parsing", String.valueOf(Chronos.toMillis(totalParsingTime)));
-        timerLog.log("Total Pre-process", String.valueOf(Chronos.toMillis(totalPreProcessTime)));
-        timerLog.log("Total Process", String.valueOf(Chronos.toMillis(totalProcessTime)));
+        timerLog.log("Total Parsing", Chronos.formatNano(totalParsingTime));
+        timerLog.log("Total Pre-process", Chronos.formatNano(totalPreProcessTime));
+        timerLog.log("Total Process", Chronos.formatNano(totalProcessTime));
     }
 
-    private void parseFile(String requestFilePath) throws IOException, IncorrectPrefixStructure, IncorrectConditionStructure {
+    private void parseFile(
+            String requestFilePath) throws IOException, IncorrectPrefixStructure, IncorrectConditionStructure {
         BufferedReader reader = new BufferedReader(new FileReader(requestFilePath));
 
         StringBuilder sb = new StringBuilder();
@@ -148,30 +150,30 @@ public final class Main {
         Chronos chronoQuery =
                 Chronos.start("Parsing");
         Query query = QueryParser.parse(queryString);
-        times.add(String.valueOf(Chronos.toMillis(chronoQuery.stop())));
+        times.add(Chronos.formatNano(chronoQuery.stop()));
         totalParsingTime += chronoQuery.duration();
 
         Chronos chronoPreprocess =
                 Chronos.start("Pre-process");
         QueryGraph queryGraph = new QueryGraph(ds, query);
-        times.add(String.valueOf(Chronos.toMillis(chronoPreprocess.stop())));
+        times.add(Chronos.formatNano(chronoPreprocess.stop()));
         totalPreProcessTime += chronoPreprocess.duration();
 
         Chronos chronoProcess =
                 Chronos.start("Process");
         HashSet<TreeNode> results = manager.evaluate(queryGraph);
-        times.add(String.valueOf(Chronos.toMillis(chronoProcess.stop())));
+        times.add(Chronos.formatNano(chronoProcess.stop()));
         totalProcessTime += chronoProcess.duration();
 
 
-        timerLog.log("Q" + queryNumber, times);
+        timerLog.log("Q" + String.format("% 2d", queryNumber), times);
         timerLog.flush();
 
         ArrayList<String> finalResults = new ArrayList<>(results.size());
         for (TreeNode result : results) {
             finalResults.add(ds.getValue(result.getId()));
         }
-        resultLog.log("Q" + queryNumber, finalResults);
+        resultLog.log("Q" + String.format("% 2d", queryNumber), finalResults);
     }
 
     private static class RDFListener extends RDFHandlerBase {
