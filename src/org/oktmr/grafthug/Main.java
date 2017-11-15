@@ -37,6 +37,8 @@ public final class Main {
 
     @Parameter(names = {"-d", "--debug"}, description = "Allows the debug logs to be displayed")
     private boolean debug = false;
+    @Parameter(names = "--version", description = "Grafthug version")
+    private boolean version = false;
     @Parameter(names = {"-o", "--output"}, description = "CSV result output file", arity = 1)
     private String resultPath = "results.csv";
     @Parameter(names = {"-t", "--timer"}, description = "CSV timer result output file")
@@ -65,6 +67,10 @@ public final class Main {
             System.out.println();
             jcommander.usage();
         }
+    }
+
+    private static String getVersion() {
+        return "Grafthug v1.0.1 - Bo Je";
     }
 
     /**
@@ -97,6 +103,12 @@ public final class Main {
             jcommander.usage();
             return;
         }
+
+        if (version) {
+            System.out.println(getVersion());
+            return;
+        }
+
         if (request == null && requestFilePath == null) {
             throw new ParameterException("The following option is required: [-r | --request | -q | --query]");
         }
@@ -131,7 +143,7 @@ public final class Main {
         chronoExec.stop();
         chronoTotal.stop();
 
-        timerLog.log("Total:", Chronos.formatMillis(totalParsingTime),Chronos.formatMillis(totalPreProcessTime), Chronos.formatMillis(totalProcessTime), Chronos.formatMillis(total));
+        timerLog.log("Total:", Chronos.formatMillis(totalParsingTime), Chronos.formatMillis(totalPreProcessTime), Chronos.formatMillis(totalProcessTime), Chronos.formatMillis(total));
         timerLog.log(chronoIndex);
         timerLog.log(chronoExec);
 
