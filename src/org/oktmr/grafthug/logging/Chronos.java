@@ -1,4 +1,4 @@
-package org.oktmr.grafthug.time;
+package org.oktmr.grafthug.logging;
 
 /**
  *

@@ -45,4 +45,10 @@ public class QueryGraph {
     public Iterator<Map.Entry<Integer, ArrayList<Integer>>> iterator() {
         return queryGraph.entrySet().iterator();
     }
+
+
+    @Override
+    public String toString() {
+        return String.valueOf(queryGraph);
+    }
 }

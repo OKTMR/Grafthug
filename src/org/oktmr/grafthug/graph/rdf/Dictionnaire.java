@@ -13,6 +13,14 @@ public class Dictionnaire {
     }
 
 
+    public void clear() {
+        nodes.clear();
+        edges.clear();
+
+        nodes = null;
+        edges = null;
+    }
+
     /**
      * Add index of subject and object to TreeNode
      * Add index of predicate to TreeEdge

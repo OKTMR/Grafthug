@@ -7,11 +7,12 @@ import org.oktmr.grafthug.graph.prefixtree.Manager;
 import org.oktmr.grafthug.graph.prefixtree.QueryGraph;
 import org.oktmr.grafthug.graph.rdf.Dictionnaire;
 import org.oktmr.grafthug.graph.rdf.RdfNode;
+import org.oktmr.grafthug.logging.Chronos;
+import org.oktmr.grafthug.logging.Log;
 import org.oktmr.grafthug.query.Query;
 import org.oktmr.grafthug.query.QueryParser;
 import org.oktmr.grafthug.query.exception.IncorrectConditionStructure;
 import org.oktmr.grafthug.query.exception.IncorrectPrefixStructure;
-import org.oktmr.grafthug.time.Chronos;
 import org.openrdf.model.Statement;
 import org.openrdf.rio.*;
 import org.openrdf.rio.helpers.RDFHandlerBase;
@@ -28,14 +29,11 @@ public final class Main {
     private static final DataStore ds = new DataStore();
     private static final Dictionnaire dico = new Dictionnaire();
     private static final Manager manager = new Manager();
-
     private static long totalParsingTime = 0;
     private static long totalPreProcessTime = 0;
     private static long totalProcessTime = 0;
     private static long total = 0;
-
-
-    @Parameter(names = {"-d", "--debug"}, description = "Allows the debug logs to be displayed")
+    @Parameter(names = {"-v", "--verbose"}, description = "Allows the debug logs to be displayed")
     private boolean debug = false;
     @Parameter(names = {"-o", "--output"}, description = "CSV result output file", arity = 1)
     private String resultPath = "results.csv";
@@ -49,7 +47,6 @@ public final class Main {
     private String dataFilePath = null;
     @Parameter(names = {"-q", "--query"}, description = "File that contains requests. Either this or -r is required")
     private String requestFilePath = null;
-
     private Log timerLog;
     private Log resultLog;
 
@@ -90,9 +87,13 @@ public final class Main {
 
         dico.index();
 
+
         for (RdfNode rdfNode : dico.nodes.values()) {
             manager.add(rdfNode);
+            rdfNode.clear();
         }
+
+        dico.clear();
     }
 
     private void run(JCommander jcommander) throws IOException, RDFParseException, RDFHandlerException,
@@ -101,7 +102,6 @@ public final class Main {
             jcommander.usage();
             return;
         }
-
 
         if (request == null && requestFilePath == null) {
             throw new ParameterException("The following option is required: [-r | --request | -q | --query]");
@@ -122,9 +122,6 @@ public final class Main {
                 Chronos.start("Indexation");
         indexation(dataFilePath);
         chronoIndex.stop();
-
-        System.out.println("Number of treeNodes : " + manager.treeNodes.size());
-        System.out.println("Number of edges : " + dico.getEdges().size());
 
         timerLog.log("Q n°", "Parsing", "Pre-Process", "Eval", "Total");
 
@@ -190,18 +187,19 @@ public final class Main {
         HashSet<Integer> results = manager.evaluate(queryGraph);
         times.add(Chronos.formatMillis(chronoProcess.stop()));
         times.add(Chronos.formatMillis(totalExec.stop()));
+
         totalParsingTime += chronoQuery.duration();
         totalPreProcessTime += chronoPreprocess.duration();
         totalProcessTime += chronoProcess.duration();
         total += totalExec.duration();
 
         timerLog.log("Q" + String.format("% 2d", queryNumber), times);
-        timerLog.flush();
 
         ArrayList<String> finalResults = new ArrayList<>(results.size());
         for (int result : results) {
             finalResults.add(ds.getValue(result));
         }
+
         resultLog.log("Q" + String.format("% 2d", queryNumber), finalResults);
     }
 

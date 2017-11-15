@@ -8,13 +8,13 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 
 public class RdfNode extends Node {
-    public HashMap<RdfEdge, HashSet<RdfNode>> linkIn; //edge, nodeIn = object
+    //public HashMap<RdfEdge, HashSet<RdfNode>> linkIn; //edge, nodeIn = object
     public HashMap<RdfEdge, HashSet<RdfNode>> linkOut; //edge, nodeOut = subject
     public HashMap<Integer, ArrayList<Integer>> indexStructure = new HashMap<>(); //yolo
 
     RdfNode(int id) {
         super(id);
-        linkIn = new HashMap<>();
+        //linkIn = new HashMap<>();
         linkOut = new HashMap<>();
     }
 
@@ -33,7 +33,7 @@ public class RdfNode extends Node {
      * @param rdfNodeIn is a object
      */
     public void addLinkIn(RdfEdge edge, RdfNode rdfNodeIn) {
-        linkIn.computeIfAbsent(edge, k -> new HashSet<>()).add(rdfNodeIn);
+        //linkIn.computeIfAbsent(edge, k -> new HashSet<>()).add(rdfNodeIn);
     }
 
     /**
@@ -48,5 +48,15 @@ public class RdfNode extends Node {
             }
         }
         indexStructure.values().forEach(list -> list.sort(null));
+    }
+
+    public void clear() {
+        linkOut.clear();
+        //linkIn.clear();
+        indexStructure.clear();
+
+        //linkIn = null;
+        linkOut = null;
+        indexStructure = null;
     }
 }
