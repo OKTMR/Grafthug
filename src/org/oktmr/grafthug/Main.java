@@ -32,6 +32,7 @@ public final class Main {
     private static long totalParsingTime = 0;
     private static long totalPreProcessTime = 0;
     private static long totalProcessTime = 0;
+    private static long total = 0;
 
 
     @Parameter(names = {"-d", "--debug"}, description = "Allows the debug logs to be displayed")
@@ -109,27 +110,33 @@ public final class Main {
             resultLog.debug();
         }
 
+        Chronos chronoTotal = Chronos.start("Total");
         // beginning indexation
         Chronos chronoIndex =
                 Chronos.start("Indexation");
         indexation(dataFilePath);
         chronoIndex.stop();
-        timerLog.log(chronoIndex);
 
         System.out.println("Number of treeNodes : " + manager.treeNodes.size());
         System.out.println("Number of edges : " + dico.getEdges().size());
 
-        timerLog.log("Q n°", "Parsing ", "Pre-Process", "Evaluation");
+        timerLog.log("Q n°", "Parsing", "Pre-Process", "Eval", "Total");
 
+        Chronos chronoExec = Chronos.start("Parsing + Pre-process + Evaluation + Logging");
         if (requestFilePath != null) {
             parseFile(requestFilePath);
         } else if (request != null) {
             exec(1, request);
         }
+        chronoExec.stop();
+        chronoTotal.stop();
 
-        timerLog.log("Total Parsing", Chronos.formatNano(totalParsingTime));
-        timerLog.log("Total Pre-process", Chronos.formatNano(totalPreProcessTime));
-        timerLog.log("Total Process", Chronos.formatNano(totalProcessTime));
+        timerLog.log("Total:", Chronos.formatMillis(totalParsingTime),Chronos.formatMillis(totalPreProcessTime), Chronos.formatMillis(totalProcessTime), Chronos.formatMillis(total));
+        timerLog.log(chronoIndex);
+        timerLog.log(chronoExec);
+
+        timerLog.log(chronoTotal);
+
     }
 
     private void parseFile(
@@ -160,25 +167,27 @@ public final class Main {
     private void exec(int queryNumber, String queryString) throws IncorrectPrefixStructure,
             IncorrectConditionStructure,
             IOException {
-        ArrayList<String> times = new ArrayList<>(3);
+        ArrayList<String> times = new ArrayList<>(4);
+        Chronos totalExec = Chronos.start("total");
         Chronos chronoQuery =
                 Chronos.start("Parsing");
         Query query = QueryParser.parse(queryString);
-        times.add(Chronos.formatNano(chronoQuery.stop()));
-        totalParsingTime += chronoQuery.duration();
+        times.add(Chronos.formatMillis(chronoQuery.stop()));
 
         Chronos chronoPreprocess =
                 Chronos.start("Pre-process");
         QueryGraph queryGraph = new QueryGraph(ds, query);
-        times.add(Chronos.formatNano(chronoPreprocess.stop()));
-        totalPreProcessTime += chronoPreprocess.duration();
+        times.add(Chronos.formatMillis(chronoPreprocess.stop()));
 
         Chronos chronoProcess =
                 Chronos.start("Process");
         HashSet<Integer> results = manager.evaluate(queryGraph);
-        times.add(Chronos.formatNano(chronoProcess.stop()));
+        times.add(Chronos.formatMillis(chronoProcess.stop()));
+        times.add(Chronos.formatMillis(totalExec.stop()));
+        totalParsingTime += chronoQuery.duration();
+        totalPreProcessTime += chronoPreprocess.duration();
         totalProcessTime += chronoProcess.duration();
-
+        total += totalExec.duration();
 
         timerLog.log("Q" + String.format("% 2d", queryNumber), times);
         timerLog.flush();

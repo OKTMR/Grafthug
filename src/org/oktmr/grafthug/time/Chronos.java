@@ -23,19 +23,11 @@ public class Chronos {
     }
 
     private static long now() {
-        return System.nanoTime();
+        return System.currentTimeMillis();
     }
 
-    public static double toMillis(long interval) {
-        return ((double) interval) / 1000000;
-    }
-
-    public static String formatMillis(double value) {
-        return String.format("%.6f", value);
-    }
-
-    public static String formatNano(long value) {
-        return String.format("%.6f", toMillis(value));
+    public static String formatMillis(long value) {
+        return (value < 1) ? "<1 ms" : value + " ms";
     }
 
     public long stop() {
@@ -54,6 +46,9 @@ public class Chronos {
     }
 
     public long duration() {
+        if(start == stop){
+            return 1;
+        }
         return stop - start;
     }
 
@@ -66,10 +61,10 @@ public class Chronos {
 
     @Override
     public String toString() {
-        return name + " time : " + formatNano(step());
+        return name + " time:\t" + formatMillis(step());
     }
 
     public String toCSV() {
-        return name + ";" + formatNano(step());
+        return name + ";" + formatMillis(step());
     }
 }
