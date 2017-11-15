@@ -37,13 +37,11 @@ public final class Main {
 
     @Parameter(names = {"-d", "--debug"}, description = "Allows the debug logs to be displayed")
     private boolean debug = false;
-    @Parameter(names = "--version", description = "Grafthug version")
-    private boolean version = false;
     @Parameter(names = {"-o", "--output"}, description = "CSV result output file", arity = 1)
     private String resultPath = "results.csv";
     @Parameter(names = {"-t", "--timer"}, description = "CSV timer result output file")
     private String timerFileOut = "timer.csv";
-    @Parameter(names = {"-h", "--help"}, description = "Displays the help", help = true)
+    @Parameter(names = {"-h", "--help"}, description = "Displays the help and version", help = true)
     private boolean help;
     @Parameter(names = {"-r", "--request"}, description = "Unary Request to execute. Either this or -q is required")
     private String request = null;
@@ -58,7 +56,7 @@ public final class Main {
     public static void main(String... args) throws Exception {
         Main main = new Main();
         JCommander jcommander = JCommander.newBuilder().addObject(main).build();
-        jcommander.setProgramName("grafthug");
+        jcommander.setProgramName(getVersion());
         try {
             jcommander.parse(args);
             main.run(jcommander);
@@ -104,10 +102,6 @@ public final class Main {
             return;
         }
 
-        if (version) {
-            System.out.println(getVersion());
-            return;
-        }
 
         if (request == null && requestFilePath == null) {
             throw new ParameterException("The following option is required: [-r | --request | -q | --query]");
