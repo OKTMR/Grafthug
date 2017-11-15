@@ -1,4 +1,4 @@
-# Grafthug v1.0.2
+# Grafthug v1.0.3
 
 > A graph oriented rdf database based on AMBeR
 
