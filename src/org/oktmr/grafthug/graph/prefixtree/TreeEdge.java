@@ -1,11 +1,10 @@
 package org.oktmr.grafthug.graph.prefixtree;
 
+import gnu.trove.set.hash.TIntHashSet;
 import org.oktmr.grafthug.graph.Edge;
 
-import java.util.HashSet;
-
 public class TreeEdge extends Edge {
-    private HashSet<Integer> treeNodes;
+    private TIntHashSet treeNodes;
 
     private int parent;
 
@@ -21,7 +20,7 @@ public class TreeEdge extends Edge {
 
     TreeEdge(int id) {
         super(id);
-        this.treeNodes = new HashSet<>();
+        this.treeNodes = new TIntHashSet();
     }
 
 
@@ -93,7 +92,7 @@ public class TreeEdge extends Edge {
         return super.toString() + ":" + treeNodes.size();
     }
 
-    public HashSet<Integer> getNodes() {
+    public TIntHashSet getNodes() {
         return treeNodes;
     }
 

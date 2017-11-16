@@ -3,6 +3,9 @@ package org.oktmr.grafthug;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
+import gnu.trove.iterator.TIntIterator;
+import gnu.trove.iterator.TIntObjectIterator;
+import gnu.trove.set.hash.TIntHashSet;
 import org.oktmr.grafthug.graph.prefixtree.Manager;
 import org.oktmr.grafthug.graph.prefixtree.QueryGraph;
 import org.oktmr.grafthug.graph.rdf.Dictionnaire;
@@ -22,7 +25,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public final class Main {
 
@@ -65,7 +67,7 @@ public final class Main {
     }
 
     private static String getVersion() {
-        return "Grafthug v1.1.0 - Bo Je";
+        return "Grafthug v1.1.1 - Bô Je";
     }
 
     /**
@@ -85,12 +87,16 @@ public final class Main {
         rdfParser.parse(reader, "");
         reader.close();
 
-        ds.optimize();
-        dico.index();
+        ds.compact();
+        //dico.index();
 
         manager.setSize(dico.nodes.size());
 
-        for (RdfNode rdfNode : dico.nodes.values()) {
+        TIntObjectIterator<RdfNode> iterator = dico.nodes.iterator();
+        for (int i = dico.nodes.size(); i-- > 0; ) {
+            iterator.advance();
+            RdfNode rdfNode = iterator.value();
+            rdfNode.createIndex();
             manager.add(rdfNode);
             rdfNode.clear();
         }
@@ -109,6 +115,13 @@ public final class Main {
             throw new ParameterException("The following option is required: [-r | --request | -q | --query]");
         }
 
+        Chronos chronoTotal = Chronos.start("Total");
+        // beginning indexation
+        Chronos chronoIndex =
+                Chronos.start("Indexation");
+        indexation(dataFilePath);
+        chronoIndex.stop();
+
 
         timerLog = new Log(timerFileOut);
         resultLog = new Log(resultPath);
@@ -117,13 +130,6 @@ public final class Main {
         if (debug) {
             resultLog.debug();
         }
-
-        Chronos chronoTotal = Chronos.start("Total");
-        // beginning indexation
-        Chronos chronoIndex =
-                Chronos.start("Indexation");
-        indexation(dataFilePath);
-        chronoIndex.stop();
 
         timerLog.log("Q n°", "Parsing", "Pre-Process", "Eval", "Total");
 
@@ -192,7 +198,7 @@ public final class Main {
 
         Chronos chronoProcess =
                 Chronos.start("Process");
-        HashSet<Integer> results = manager.evaluate(queryGraph);
+        TIntHashSet results = manager.evaluate(queryGraph);
         times.add(Chronos.formatMillis(chronoProcess.stop()));
         times.add(Chronos.formatMillis(totalExec.stop()));
 
@@ -204,7 +210,8 @@ public final class Main {
         timerLog.log("Q" + String.format("% 2d", queryNumber), times);
 
         ArrayList<String> finalResults = new ArrayList<>(results.size());
-        for (int result : results) {
+        for (TIntIterator iterator = results.iterator(); iterator.hasNext(); ) {
+            int result = iterator.next();
             finalResults.add(ds.getValue(result));
         }
 

@@ -1,25 +1,36 @@
 package org.oktmr.grafthug.graph.prefixtree;
 
+import gnu.trove.iterator.TIntIterator;
+import gnu.trove.iterator.TIntObjectIterator;
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.set.hash.TIntHashSet;
 import org.oktmr.grafthug.graph.rdf.RdfNode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.ListIterator;
 
 public class Manager {
-    public HashMap<Integer, TreeNode> treeNodes;
+    private TIntObjectHashMap<TreeNode> treeNodes;
 
     public Manager() {
-        this.treeNodes = new HashMap<>();
+        this.treeNodes = new TIntObjectHashMap<>();
     }
 
-    public static void addIntersect(HashSet<Integer> insert, HashSet<Integer> compare1, HashSet<Integer> compare2) {
-        if (compare1.size() < compare2.size()) {
-            for (int key : compare1) {
+    public static void addIntersect(TIntHashSet insert, TIntHashSet compare1, TIntHashSet compare2) {
+        if (compare1.size() <= compare2.size()) {
+            TIntIterator iterator = compare1.iterator();
+            for (int i = compare1.size(); i-- > 0; ) {
+                int key = iterator.next();
                 if (compare2.contains(key)) {
                     insert.add(key);
                 }
             }
         } else {
-            for (int key : compare2) {
+            TIntIterator iterator = compare2.iterator();
+            for (int i = compare2.size(); i-- > 0; ) {
+                int key = iterator.next();
                 if (compare1.contains(key)) {
                     insert.add(key);
                 }
@@ -28,12 +39,25 @@ public class Manager {
     }
 
     public void add(RdfNode node) {
-        TreeNode treeNode = treeNodes.computeIfAbsent(node.getId(), TreeNode::new);
-
-        for (Map.Entry<Integer, ArrayList<Integer>> entry : node.indexStructure.entrySet()) {
-            treeNode.add(entry.getValue(), entry.getKey());
+        TreeNode treeNode = computeIfAbsent(node.getId());
+        TIntObjectIterator<TIntArrayList> iterator = node.indexStructure.iterator();
+        for (int i = node.indexStructure.size(); i-- > 0; ) {
+            iterator.advance();
+            treeNode.add(iterator.value(), iterator.key());
         }
+
+        treeNode.compact();
         //System.out.println("treeNode = " + treeNode);
+    }
+
+    private TreeNode computeIfAbsent(int id) {
+        if (treeNodes.containsKey(id)) {
+            return treeNodes.get(id);
+        } else {
+            TreeNode tr = new TreeNode(id);
+            treeNodes.put(id, tr);
+            return tr;
+        }
     }
 
     /**
@@ -41,11 +65,11 @@ public class Manager {
      * @param edges sorted list
      * @return the results found for this iteration
      */
-    public HashSet<Integer> findNeighborhood(int node, ArrayList<Integer> edges) {
-        HashSet<Integer> result = new HashSet<>();
+    public TIntHashSet findNeighborhood(int node, ArrayList<Integer> edges) {
+        TIntHashSet result = new TIntHashSet();
 
         if (!treeNodes.containsKey(node)) {// there is no object named this way.
-            System.out.println(node + ":noNode");
+            //System.out.println(node + ":noNode");
             return null;
         }
 
@@ -53,7 +77,7 @@ public class Manager {
 
         for (int edge : edges) { // all the edges are present in the treenode
             if (!treeNode.getEdges().containsKey(edge)) {
-                System.out.println(edge + ":noEdges");
+                //System.out.println(edge + ":noEdges");
                 return null;
             }
         }
@@ -65,17 +89,21 @@ public class Manager {
             if (treeEdge.getParent() > firstEdge) break; // the smallest element is not in the tree
             // we have the guarantee that the tree is bigger than the edges
             // because the smallest element is always in the tree
-            result.addAll(crawlUp(treeEdge, edges.listIterator(edges.size() - 1)));
+            TIntHashSet crawlUp = crawlUp(treeEdge, edges.listIterator(edges.size() - 1));
+            if (result.size() <= crawlUp.size() / 2) {
+                result.ensureCapacity(result.size() + crawlUp.size());
+            }
+            result.addAll(crawlUp);
         }
 
         return result;
     }
 
-    public HashSet<Integer> findNeighborhood(int node, ArrayList<Integer> edges, HashSet<Integer> lastResult) {
-        HashSet<Integer> result = new HashSet<>();
+    public TIntHashSet findNeighborhood(int node, ArrayList<Integer> edges, TIntHashSet lastResult) {
+        TIntHashSet result = new TIntHashSet();
 
         if (!treeNodes.containsKey(node)) {// there is no object named this way.
-            System.out.println(node + ":noNodes");
+            //System.out.println(node + ":noNodes");
             return null;
         }
 
@@ -83,7 +111,7 @@ public class Manager {
 
         for (int edge : edges) { // all the edges are present in the treenode
             if (!treeNode.getEdges().containsKey(edge)) {
-                System.out.println(node + ":noEdge");
+                //System.out.println(node + ":noEdge");
                 return null;
             }
         }
@@ -106,18 +134,18 @@ public class Manager {
      * @param edges    to find if it has this in common
      * @return the nodes which are present
      */
-    public HashSet<Integer> crawlUp(TreeEdge treeEdge, ListIterator<Integer> edges) {
+    public TIntHashSet crawlUp(TreeEdge treeEdge, ListIterator<Integer> edges) {
 
         if (!edges.hasPrevious()) { // first basic case, there is only one edge
             return treeEdge.getNodes();
         }
-        HashSet<Integer> nodes = new HashSet<>(); // it's surely a part of the solution
+        TIntHashSet nodes = new TIntHashSet(); // it's surely a part of the solution
 
         // weee gooo uuuuup
         TreeEdge parent = treeEdge.previous();
         int edgeId = edges.previous();
 
-        HashSet<Integer> lastNodes = treeEdge.getNodes();
+        TIntHashSet lastNodes = treeEdge.getNodes();
         while (true) {
             if (parent.getId() == edgeId) {// it's the same, the two of them go back
                 addIntersect(nodes, lastNodes, parent.getNodes()); // we combine the nodes
@@ -141,7 +169,7 @@ public class Manager {
 
     }
 
-    public HashSet<Integer> evaluate(QueryGraph query) {
+    public TIntHashSet evaluate(QueryGraph query) {
         query.sort(this);
         Iterator<WeightedCondition> iterator = query.iterator();
 
@@ -149,12 +177,12 @@ public class Manager {
             WeightedCondition entry = iterator.next();
 
             // we get the results of the first query
-            HashSet<Integer> results = findNeighborhood(entry.getId(), entry.getEdges());
+            TIntHashSet results = findNeighborhood(entry.getId(), entry.getEdges());
 
             if (results == null) {
-                return new HashSet<>(); // <3
+                return new TIntHashSet(); // <3
             }
-            System.out.println(entry.getId() + "results:" + results.size());
+            //System.out.println(entry.getId() + "results:" + results.size());
 
 
             while (iterator.hasNext()) {
@@ -162,19 +190,19 @@ public class Manager {
                 // we filter the initial result table with the rest
                 results = findNeighborhood(entry.getId(), entry.getEdges(), results);
                 if (results == null || results.size() == 0) {
-                    return new HashSet<>();
+                    return new TIntHashSet();
                 }
-                System.out.println(entry.getId() + "results:" + results.size());
+                //System.out.println(entry.getId() + "results:" + results.size());
             }
 
             return results;
         }
 
-        return new HashSet<>();
+        return new TIntHashSet();
     }
 
     public void setSize(int size) {
-        treeNodes = new HashMap<>(size);
+        treeNodes = new TIntObjectHashMap<>(size);
     }
 
     public int getWeight(Integer nodeIndex, Integer edgeIndex) {

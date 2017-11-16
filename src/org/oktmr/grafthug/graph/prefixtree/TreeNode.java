@@ -1,19 +1,24 @@
 package org.oktmr.grafthug.graph.prefixtree;
 
+import gnu.trove.iterator.TIntIterator;
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.hash.TIntIntHashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import org.oktmr.grafthug.graph.Node;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.ListIterator;
 
 public class TreeNode extends Node {
-    private HashMap<Integer, TreeEdge> prefixTree; //yolo
-    private HashMap<Integer, LinkedList<TreeEdge>> edges;
-    private HashMap<Integer, Integer> edgesWeight;
+    private TIntObjectHashMap<TreeEdge> prefixTree; //yolo
+    private TIntObjectHashMap<LinkedList<TreeEdge>> edges;
+    private TIntIntHashMap edgesWeight;
 
     public TreeNode(int id) {
         super(id);
-        prefixTree = new HashMap<>();
-        edges = new HashMap<>();
-        edgesWeight = new HashMap<>();
+        prefixTree = new TIntObjectHashMap<>();
+        edges = new TIntObjectHashMap<>();
+        edgesWeight = new TIntIntHashMap(10, 0.75f);
     }
 
     /**
@@ -22,12 +27,9 @@ public class TreeNode extends Node {
      * @param edges    sorted edges
      * @param treeNode the node to add
      */
-    public void add(ArrayList<Integer> edges, int treeNode) {
+    public void add(TIntArrayList edges, int treeNode) {
         // edges are already sorted
         // edges.sort(null);
-        for (int edgeId : edges) {
-            edgesWeight.compute(edgeId, (key, value) -> (value == null) ? 1 : ++value);
-        }
 
         if (prefixTree.containsKey(edges.get(0))) {
             // if the prefix tree contains the first edge of the arraylist
@@ -35,20 +37,29 @@ public class TreeNode extends Node {
             TreeEdge treeEdge = prefixTree.get(edges.get(0));
             updateChain(treeEdge, edges.iterator(), treeNode);
         } else {
-            Iterator<Integer> iterator = edges.iterator();
+            TIntIterator iterator = edges.iterator();
 
             TreeEdge treeEdge = new TreeEdge(edges.get(0));
             treeEdge.add(treeNode);
             treeEdge.setParent(treeEdge.getId());
 
             prefixTree.put(treeEdge.getId(), treeEdge);
-            this.edges.computeIfAbsent(treeEdge.getId(), k -> new LinkedList<>()).add(treeEdge);
+            computeIfAbsent(treeEdge.getId()).add(treeEdge);
 
             if (iterator.hasNext()) {
                 iterator.next();
                 fillChain(treeEdge, iterator, treeNode);
             }
         }
+    }
+
+    public LinkedList<TreeEdge> computeIfAbsent(int id) {
+        if (edges.containsKey(id)) {
+            return edges.get(id);
+        }
+        LinkedList<TreeEdge> ll = new LinkedList<>();
+        edges.put(id, ll);
+        return ll;
     }
 
     /**
@@ -58,7 +69,7 @@ public class TreeNode extends Node {
      * @param iterator iterator over sorted list of edges
      * @param treeNode the node to add to the list
      */
-    public void updateChain(TreeEdge treeEdge, Iterator<Integer> iterator, int treeNode) {
+    public void updateChain(TreeEdge treeEdge, TIntIterator iterator, int treeNode) {
         if (iterator.hasNext()) {
             int edge = iterator.next();
 
@@ -105,7 +116,7 @@ public class TreeNode extends Node {
      * @param iterator array iterator
      * @param treeNode the node to add
      */
-    public void fillChain(TreeEdge treeEdge, Iterator<Integer> iterator, int treeNode) {
+    public void fillChain(TreeEdge treeEdge, TIntIterator iterator, int treeNode) {
         if (iterator.hasNext()) {
             // creation
             TreeEdge newChain = new TreeEdge(iterator.next());
@@ -144,15 +155,15 @@ public class TreeNode extends Node {
 
             list.add(toInsert);
         } else {
-            edges.computeIfAbsent(toInsert.getId(), k -> new LinkedList<>()).add(toInsert);
+            computeIfAbsent(toInsert.getId()).add(toInsert);
         }
     }
 
-    public HashMap<Integer, TreeEdge> getPrefixTree() {
+    public TIntObjectHashMap<TreeEdge> getPrefixTree() {
         return prefixTree;
     }
 
-    public HashMap<Integer, LinkedList<TreeEdge>> getEdges() {
+    public TIntObjectHashMap<LinkedList<TreeEdge>> getEdges() {
         return edges;
     }
 
@@ -160,7 +171,7 @@ public class TreeNode extends Node {
      * @return pretty print of nodeId
      */
     public String toString() {
-        return "{" + super.toString() + ", e=" + edges.values() + ", p=" + prefixTree.values() + "}";
+        return "{" + super.toString() + ", e=" + edges + ", p=" + prefixTree + "}";
     }
 
     public LinkedList<TreeEdge> getEdge(int lastEdge) {
@@ -168,6 +179,12 @@ public class TreeNode extends Node {
     }
 
     public Integer getWeight(Integer edgeIndex) {
-        return edgesWeight.get(edgeIndex) != null ? edgesWeight.get(edgeIndex) : 0;
+        return edges.containsKey(edgeIndex) ? edges.get(edgeIndex).getFirst().getNodes().size() : 0;
+    }
+
+    public void compact() {
+        edgesWeight.compact();
+        edges.compact();
+        prefixTree.compact();
     }
 }
