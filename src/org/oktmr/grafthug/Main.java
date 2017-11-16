@@ -67,7 +67,7 @@ public final class Main {
     }
 
     private static String getVersion() {
-        return "Grafthug v1.0.3 - Bo Je";
+        return "Grafthug v1.1.0 - Bo Je";
     }
 
     /**
