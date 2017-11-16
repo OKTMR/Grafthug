@@ -1,8 +1,9 @@
 package org.oktmr.grafthug.graph.rdf;
 
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import org.oktmr.grafthug.graph.Node;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -10,7 +11,7 @@ import java.util.Map.Entry;
 public class RdfNode extends Node {
     //public HashMap<RdfEdge, HashSet<RdfNode>> linkIn; //edge, nodeIn = object
     public HashMap<RdfEdge, HashSet<RdfNode>> linkOut; //edge, nodeOut = subject
-    public HashMap<Integer, ArrayList<Integer>> indexStructure = new HashMap<>(); //yolo
+    public TIntObjectHashMap<TIntArrayList> indexStructure = new TIntObjectHashMap<>(); //yolo
 
     RdfNode(int id) {
         super(id);
@@ -44,10 +45,23 @@ public class RdfNode extends Node {
     public void createIndex() {
         for (Entry<RdfEdge, HashSet<RdfNode>> entry : linkOut.entrySet()) {
             for (RdfNode rdfNode : entry.getValue()) {
-                indexStructure.computeIfAbsent(rdfNode.getId(), k -> new ArrayList<>()).add(entry.getKey().getId());
+                computeIfAbsent(rdfNode.getId()).add(entry.getKey().getId());
             }
         }
-        indexStructure.values().forEach(list -> list.sort(null));
+        indexStructure.forEachValue(integers -> {
+            integers.sort();
+            return true;
+        });
+    }
+
+    public TIntArrayList computeIfAbsent(int rdfNodeId) {
+        if (indexStructure.containsKey(rdfNodeId)) {
+            return indexStructure.get(rdfNodeId);
+        } else {
+            TIntArrayList arr = new TIntArrayList();
+            indexStructure.put(rdfNodeId, arr);
+            return arr;
+        }
     }
 
     public void clear() {

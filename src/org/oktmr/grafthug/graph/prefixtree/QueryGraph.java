@@ -1,18 +1,20 @@
 package org.oktmr.grafthug.graph.prefixtree;
 
+import gnu.trove.iterator.TIntObjectIterator;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import org.oktmr.grafthug.DataStore;
 import org.oktmr.grafthug.query.Condition;
 import org.oktmr.grafthug.query.Query;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+
 
 /**
  *
  */
 public class QueryGraph {
-    private HashMap<Integer, WeightedCondition> queryGraph = new HashMap<>();
+    private TIntObjectHashMap<WeightedCondition> queryGraph = new TIntObjectHashMap<>();
     private ArrayList<WeightedCondition> orderedByWeight;
 
     /**
@@ -22,16 +24,27 @@ public class QueryGraph {
     public QueryGraph(final DataStore ds, final Query query) {
         for (Condition cond : query.getConditions()) {
             // Return edge (predicate) of a condition
-            Integer edgeIndex = ds.getIndex(cond.getPredicate().stringValue());
+            int edgeIndex = ds.getIndex(cond.getPredicate().stringValue());
             // Return node (object) of a condition
-            Integer nodeIndex = ds.getIndex(cond.getObject().stringValue());
+            int nodeIndex = ds.getIndex(cond.getObject().stringValue());
 
-            if (edgeIndex == null || nodeIndex == null) {
-                queryGraph = new HashMap<>();
+            if (edgeIndex == -1 || nodeIndex == -1) {
+                queryGraph = new TIntObjectHashMap<>();
                 break;
             }
 
-            queryGraph.computeIfAbsent(nodeIndex, WeightedCondition::new).add(edgeIndex);
+            computeIfAbsent(nodeIndex).add(edgeIndex);
+        }
+    }
+
+
+    private WeightedCondition computeIfAbsent(int nodeIndex) {
+        if (queryGraph.containsKey(nodeIndex)) {
+            return queryGraph.get(nodeIndex);
+        } else {
+            WeightedCondition wc = new WeightedCondition(nodeIndex);
+            queryGraph.put(nodeIndex, wc);
+            return wc;
         }
     }
 
@@ -52,7 +65,9 @@ public class QueryGraph {
 
     public void sort(final Manager manager) {
         orderedByWeight = new ArrayList<>(queryGraph.size());
-        for (WeightedCondition wc : queryGraph.values()) {
+        for (TIntObjectIterator<WeightedCondition> iterator = queryGraph.iterator(); iterator.hasNext(); ) {
+            iterator.advance();
+            WeightedCondition wc = iterator.value();
             wc.sort();
             wc.setWeight(manager.getWeight(wc.getId(), wc.getLast()));
             orderedByWeight.add(wc);

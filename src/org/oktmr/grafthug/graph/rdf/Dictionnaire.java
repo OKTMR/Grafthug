@@ -1,22 +1,17 @@
 package org.oktmr.grafthug.graph.rdf;
 
-import java.util.HashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 
 public class Dictionnaire {
 
-    public HashMap<Integer, RdfNode> nodes; //subjects, objects
-    public HashMap<Integer, RdfEdge> edges; //predicates
+    public TIntObjectHashMap<RdfNode> nodes; //subjects, objects
+    public TIntObjectHashMap<RdfEdge> edges; //predicates
 
     public Dictionnaire() {
-        nodes = new HashMap<>();
-        edges = new HashMap<>();
+        nodes = new TIntObjectHashMap<>();
+        edges = new TIntObjectHashMap<>();
     }
 
-
-    public void clear() {
-        nodes = null;
-        edges = null;
-    }
 
     /**
      * Add index of subject and object to TreeNode
@@ -63,18 +58,7 @@ public class Dictionnaire {
         }
     }
 
-    /**
-     * Call TreeNode.createIndex() for each node of HashMap treeNodes to get each neighbords of a node.
-     */
-    public void index() {
-        for (RdfNode rdfNode : nodes.values()) {
-            rdfNode.createIndex();
-            //System.out.print("IndexStructure of TreeNode " + rdfNode + " : ");
-            //System.out.println(rdfNode.getIndexStructure());
-        }
-    }
-
-    public HashMap<Integer, RdfNode> getNodes() {
+    public TIntObjectHashMap<RdfNode> getNodes() {
         return nodes;
     }
 
@@ -82,7 +66,7 @@ public class Dictionnaire {
         return nodes.get(index);
     }
 
-    public HashMap<Integer, RdfEdge> getEdges() {
+    public TIntObjectHashMap<RdfEdge> getEdges() {
         return edges;
     }
 

@@ -1,18 +1,17 @@
 package org.oktmr.grafthug;
 
+import gnu.trove.map.hash.TObjectIntHashMap;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class DataStore {
 
-    public HashMap<String, Integer> valueIndexes;
+    public TObjectIntHashMap<String> valueIndexes;
     public ArrayList<String> values;
-    public String[] valuesOpti;
 
     public DataStore() {
-        valueIndexes = new HashMap<>();
+        valueIndexes = new TObjectIntHashMap<>(10, 0.75f, -1);
         values = new ArrayList<>();
-        valuesOpti = new String[0];
     }
 
     /**
@@ -33,12 +32,6 @@ public class DataStore {
         return valueIndexes.get(value);
     }
 
-    public void optimize() {
-        valueIndexes = new HashMap<>(valueIndexes);
-        valuesOpti = values.toArray(new String[0]);
-        values = null;
-    }
-
     /**
      * get the value of an id
      * to return query result
@@ -47,11 +40,14 @@ public class DataStore {
      * @return value of index
      */
     public String getValue(int id) {
-        return valuesOpti[id];
+        return values.get(id);
     }
 
-    public Integer getIndex(String value) {
+    public int getIndex(String value) {
         return valueIndexes.get(value);
     }
 
+    public void compact() {
+        valueIndexes.compact();
+    }
 }
