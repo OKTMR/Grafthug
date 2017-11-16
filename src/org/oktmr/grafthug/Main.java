@@ -92,8 +92,8 @@ public final class Main {
 
         manager.setSize(dico.nodes.size());
 
-
-        for (TIntObjectIterator<RdfNode> iterator = dico.nodes.iterator(); iterator.hasNext(); ) {
+        TIntObjectIterator<RdfNode> iterator = dico.nodes.iterator();
+        for (int i = dico.nodes.size(); i-- > 0; ) {
             iterator.advance();
             RdfNode rdfNode = iterator.value();
             rdfNode.createIndex();

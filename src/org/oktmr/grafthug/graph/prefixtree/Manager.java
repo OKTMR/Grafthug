@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.ListIterator;
 
 public class Manager {
-    public TIntObjectHashMap<TreeNode> treeNodes;
+    private TIntObjectHashMap<TreeNode> treeNodes;
 
     public Manager() {
         this.treeNodes = new TIntObjectHashMap<>();
@@ -20,14 +20,16 @@ public class Manager {
 
     public static void addIntersect(TIntHashSet insert, TIntHashSet compare1, TIntHashSet compare2) {
         if (compare1.size() <= compare2.size()) {
-            for (TIntIterator iterator = compare1.iterator(); iterator.hasNext(); ) {
+            TIntIterator iterator = compare1.iterator();
+            for (int i = compare1.size(); i-- > 0; ) {
                 int key = iterator.next();
                 if (compare2.contains(key)) {
                     insert.add(key);
                 }
             }
         } else {
-            for (TIntIterator iterator = compare2.iterator(); iterator.hasNext(); ) {
+            TIntIterator iterator = compare2.iterator();
+            for (int i = compare2.size(); i-- > 0; ) {
                 int key = iterator.next();
                 if (compare1.contains(key)) {
                     insert.add(key);
@@ -38,9 +40,8 @@ public class Manager {
 
     public void add(RdfNode node) {
         TreeNode treeNode = computeIfAbsent(node.getId());
-
-        for (TIntObjectIterator<TIntArrayList> iterator = node.indexStructure.iterator();
-             iterator.hasNext(); ) {
+        TIntObjectIterator<TIntArrayList> iterator = node.indexStructure.iterator();
+        for (int i = node.indexStructure.size(); i-- > 0; ) {
             iterator.advance();
             treeNode.add(iterator.value(), iterator.key());
         }

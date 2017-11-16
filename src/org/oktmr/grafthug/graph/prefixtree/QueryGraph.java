@@ -65,7 +65,8 @@ public class QueryGraph {
 
     public void sort(final Manager manager) {
         orderedByWeight = new ArrayList<>(queryGraph.size());
-        for (TIntObjectIterator<WeightedCondition> iterator = queryGraph.iterator(); iterator.hasNext(); ) {
+        TIntObjectIterator<WeightedCondition> iterator = queryGraph.iterator();
+        for (int i = queryGraph.size(); i-- > 0; ) {
             iterator.advance();
             WeightedCondition wc = iterator.value();
             wc.sort();
