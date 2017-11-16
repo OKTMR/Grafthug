@@ -26,9 +26,9 @@ import java.util.HashSet;
 
 public final class Main {
 
-    private static final DataStore ds = new DataStore();
-    private static final Dictionnaire dico = new Dictionnaire();
-    private static final Manager manager = new Manager();
+    private static DataStore ds = new DataStore();
+    private static Dictionnaire dico = new Dictionnaire();
+    private static Manager manager = new Manager();
     private static long totalParsingTime = 0;
     private static long totalPreProcessTime = 0;
     private static long totalProcessTime = 0;
@@ -85,15 +85,17 @@ public final class Main {
         rdfParser.parse(reader, "");
         reader.close();
 
+        ds.optimize();
         dico.index();
 
+        manager.setSize(dico.nodes.size());
 
         for (RdfNode rdfNode : dico.nodes.values()) {
             manager.add(rdfNode);
             rdfNode.clear();
         }
 
-        dico.clear();
+        dico = null;
     }
 
     private void run(JCommander jcommander) throws IOException, RDFParseException, RDFHandlerException,
@@ -134,7 +136,8 @@ public final class Main {
         chronoExec.stop();
         chronoTotal.stop();
 
-        timerLog.log("Total:", Chronos.formatMillis(totalParsingTime), Chronos.formatMillis(totalPreProcessTime), Chronos.formatMillis(totalProcessTime), Chronos.formatMillis(total));
+        timerLog.log("Total:", Chronos.formatMillis(totalParsingTime), Chronos.formatMillis(totalPreProcessTime),
+                     Chronos.formatMillis(totalProcessTime), Chronos.formatMillis(total));
         timerLog.log(chronoIndex);
         timerLog.log(chronoExec);
 
@@ -177,10 +180,15 @@ public final class Main {
         Query query = QueryParser.parse(queryString);
         times.add(Chronos.formatMillis(chronoQuery.stop()));
 
+        //System.out.println(query);
+
+
         Chronos chronoPreprocess =
                 Chronos.start("Pre-process");
         QueryGraph queryGraph = new QueryGraph(ds, query);
         times.add(Chronos.formatMillis(chronoPreprocess.stop()));
+
+        //System.out.println(queryGraph);
 
         Chronos chronoProcess =
                 Chronos.start("Process");

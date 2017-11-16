@@ -14,9 +14,6 @@ public class Dictionnaire {
 
 
     public void clear() {
-        nodes.clear();
-        edges.clear();
-
         nodes = null;
         edges = null;
     }

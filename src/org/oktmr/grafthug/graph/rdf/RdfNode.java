@@ -51,10 +51,6 @@ public class RdfNode extends Node {
     }
 
     public void clear() {
-        linkOut.clear();
-        //linkIn.clear();
-        indexStructure.clear();
-
         //linkIn = null;
         linkOut = null;
         indexStructure = null;

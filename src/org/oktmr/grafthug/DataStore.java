@@ -7,10 +7,12 @@ public class DataStore {
 
     public HashMap<String, Integer> valueIndexes;
     public ArrayList<String> values;
+    public String[] valuesOpti;
 
     public DataStore() {
         valueIndexes = new HashMap<>();
         values = new ArrayList<>();
+        valuesOpti = new String[0];
     }
 
     /**
@@ -31,6 +33,12 @@ public class DataStore {
         return valueIndexes.get(value);
     }
 
+    public void optimize() {
+        valueIndexes = new HashMap<>(valueIndexes);
+        valuesOpti = values.toArray(new String[0]);
+        values = null;
+    }
+
     /**
      * get the value of an id
      * to return query result
@@ -39,7 +47,7 @@ public class DataStore {
      * @return value of index
      */
     public String getValue(int id) {
-        return values.get(id);
+        return valuesOpti[id];
     }
 
     public Integer getIndex(String value) {

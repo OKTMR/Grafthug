@@ -33,7 +33,7 @@ public class Manager {
         for (Map.Entry<Integer, ArrayList<Integer>> entry : node.indexStructure.entrySet()) {
             treeNode.add(entry.getValue(), entry.getKey());
         }
-        // System.out.println("treeNode = " + treeNode);
+        //System.out.println("treeNode = " + treeNode);
     }
 
     /**
@@ -45,6 +45,7 @@ public class Manager {
         HashSet<Integer> result = new HashSet<>();
 
         if (!treeNodes.containsKey(node)) {// there is no object named this way.
+            System.out.println(node + ":noNode");
             return null;
         }
 
@@ -52,6 +53,7 @@ public class Manager {
 
         for (int edge : edges) { // all the edges are present in the treenode
             if (!treeNode.getEdges().containsKey(edge)) {
+                System.out.println(edge + ":noEdges");
                 return null;
             }
         }
@@ -73,6 +75,7 @@ public class Manager {
         HashSet<Integer> result = new HashSet<>();
 
         if (!treeNodes.containsKey(node)) {// there is no object named this way.
+            System.out.println(node + ":noNodes");
             return null;
         }
 
@@ -80,6 +83,7 @@ public class Manager {
 
         for (int edge : edges) { // all the edges are present in the treenode
             if (!treeNode.getEdges().containsKey(edge)) {
+                System.out.println(node + ":noEdge");
                 return null;
             }
         }
@@ -138,30 +142,42 @@ public class Manager {
     }
 
     public HashSet<Integer> evaluate(QueryGraph query) {
-        Iterator<Map.Entry<Integer, ArrayList<Integer>>> iterator = query.iterator();
+        query.sort(this);
+        Iterator<WeightedCondition> iterator = query.iterator();
 
         if (iterator.hasNext()) {
-            Map.Entry<Integer, ArrayList<Integer>> entry = iterator.next();
+            WeightedCondition entry = iterator.next();
 
             // we get the results of the first query
-            HashSet<Integer> results = findNeighborhood(entry.getKey(), entry.getValue());
+            HashSet<Integer> results = findNeighborhood(entry.getId(), entry.getEdges());
 
             if (results == null) {
                 return new HashSet<>(); // <3
             }
+            System.out.println(entry.getId() + "results:" + results.size());
+
 
             while (iterator.hasNext()) {
                 entry = iterator.next();
                 // we filter the initial result table with the rest
-                results = findNeighborhood(entry.getKey(), entry.getValue(), results);
+                results = findNeighborhood(entry.getId(), entry.getEdges(), results);
                 if (results == null || results.size() == 0) {
                     return new HashSet<>();
                 }
+                System.out.println(entry.getId() + "results:" + results.size());
             }
 
             return results;
         }
 
         return new HashSet<>();
+    }
+
+    public void setSize(int size) {
+        treeNodes = new HashMap<>(size);
+    }
+
+    public int getWeight(Integer nodeIndex, Integer edgeIndex) {
+        return treeNodes.containsKey(nodeIndex) ? treeNodes.get(nodeIndex).getWeight(edgeIndex) : 0;
     }
 }
