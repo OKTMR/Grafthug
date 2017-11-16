@@ -7,13 +7,13 @@ import org.oktmr.grafthug.query.Query;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  *
  */
 public class QueryGraph {
-    private HashMap<Integer, ArrayList<Integer>> queryGraph = new HashMap<>();
+    private HashMap<Integer, WeightedCondition> queryGraph = new HashMap<>();
+    private ArrayList<WeightedCondition> orderedByWeight;
 
     /**
      * @param ds    DI
@@ -31,10 +31,8 @@ public class QueryGraph {
                 break;
             }
 
-            queryGraph.computeIfAbsent(nodeIndex, k -> new ArrayList<>()).add(edgeIndex);
+            queryGraph.computeIfAbsent(nodeIndex, WeightedCondition::new).add(edgeIndex);
         }
-
-        queryGraph.forEach((node, edges) -> edges.sort(null));
     }
 
     /**
@@ -42,7 +40,25 @@ public class QueryGraph {
      *
      * @return queryGraph iterator
      */
-    public Iterator<Map.Entry<Integer, ArrayList<Integer>>> iterator() {
-        return queryGraph.entrySet().iterator();
+    public Iterator<WeightedCondition> iterator() {
+        return orderedByWeight.iterator();
+    }
+
+
+    @Override
+    public String toString() {
+        return String.valueOf(queryGraph);
+    }
+
+    public void sort(final Manager manager) {
+        orderedByWeight = new ArrayList<>(queryGraph.size());
+        for (WeightedCondition wc : queryGraph.values()) {
+            wc.sort();
+            wc.setWeight(manager.getWeight(wc.getId(), wc.getLast()));
+            orderedByWeight.add(wc);
+        }
+
+        orderedByWeight.sort(null);
+        queryGraph = null;
     }
 }

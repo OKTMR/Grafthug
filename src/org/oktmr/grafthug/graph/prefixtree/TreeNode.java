@@ -5,13 +5,15 @@ import org.oktmr.grafthug.graph.Node;
 import java.util.*;
 
 public class TreeNode extends Node {
-    private final HashMap<Integer, TreeEdge> prefixTree; //yolo
-    private final HashMap<Integer, LinkedList<TreeEdge>> edges;
+    private HashMap<Integer, TreeEdge> prefixTree; //yolo
+    private HashMap<Integer, LinkedList<TreeEdge>> edges;
+    private HashMap<Integer, Integer> edgesWeight;
 
     public TreeNode(int id) {
         super(id);
         prefixTree = new HashMap<>();
         edges = new HashMap<>();
+        edgesWeight = new HashMap<>();
     }
 
     /**
@@ -23,6 +25,10 @@ public class TreeNode extends Node {
     public void add(ArrayList<Integer> edges, int treeNode) {
         // edges are already sorted
         // edges.sort(null);
+        for (int edgeId : edges) {
+            edgesWeight.compute(edgeId, (key, value) -> (value == null) ? 1 : ++value);
+        }
+
         if (prefixTree.containsKey(edges.get(0))) {
             // if the prefix tree contains the first edge of the arraylist
             // then we need to complete it :D
@@ -55,7 +61,6 @@ public class TreeNode extends Node {
     public void updateChain(TreeEdge treeEdge, Iterator<Integer> iterator, int treeNode) {
         if (iterator.hasNext()) {
             int edge = iterator.next();
-
 
             if (edge == treeEdge.getId()) { // if the actual iterator is equal to the actual edge
                 treeEdge.add(treeNode);
@@ -160,5 +165,9 @@ public class TreeNode extends Node {
 
     public LinkedList<TreeEdge> getEdge(int lastEdge) {
         return edges.get(lastEdge);
+    }
+
+    public Integer getWeight(Integer edgeIndex) {
+        return edgesWeight.get(edgeIndex) != null ? edgesWeight.get(edgeIndex) : 0;
     }
 }
