@@ -27,7 +27,7 @@ public class Chronos {
     }
 
     public static String formatMillis(long value) {
-        return (value < 1) ? "<1 ms" : value + " ms";
+        return (value < 1) ? "1" : value + "";
     }
 
     public long stop() {
@@ -46,7 +46,7 @@ public class Chronos {
     }
 
     public long duration() {
-        if(start == stop){
+        if (start == stop) {
             return 1;
         }
         return stop - start;

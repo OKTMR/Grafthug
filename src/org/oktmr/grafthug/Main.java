@@ -130,34 +130,98 @@ public final class Main {
         if (debug) {
             resultLog.debug();
         }
-
-        timerLog.log("Q n°", "Parsing", "Pre-Process", "Eval", "Total");
-
+        ArrayList<QueryGraph> queryGraphs = new ArrayList<>();
         Chronos chronoExec = Chronos.start("Parsing + Pre-process + Evaluation + Logging");
         if (requestFilePath != null) {
-            parseFile(requestFilePath);
+            ArrayList<String> stringQueries = parseFile(requestFilePath);
+            ArrayList<Query> queries = parseQueries(stringQueries);
+            queryGraphs = preProcessQueries(queries);
+            exec(queryGraphs);
+
         } else if (request != null) {
-            exec(1, request);
+            ArrayList<String> stringQueries = new ArrayList<>(1);
+            stringQueries.add(request);
+            ArrayList<Query> queries = parseQueries(stringQueries);
+            queryGraphs = preProcessQueries(queries);
+            exec(queryGraphs);
         }
         chronoExec.stop();
         chronoTotal.stop();
 
-        timerLog.log("Total:", Chronos.formatMillis(totalParsingTime), Chronos.formatMillis(totalPreProcessTime),
-                     Chronos.formatMillis(totalProcessTime), Chronos.formatMillis(total));
+        total += totalParsingTime + totalPreProcessTime + totalProcessTime;
         timerLog.log(chronoIndex);
+        timerLog.log("Parsing    : ", Chronos.formatMillis(totalParsingTime));
+        timerLog.log("Pre-process: ", Chronos.formatMillis(totalPreProcessTime));
+        timerLog.log("Evaluation : ", Chronos.formatMillis(totalProcessTime));
+        timerLog.log("Query Count      : ", String.valueOf(queryGraphs.size()));
         timerLog.log(chronoExec);
-
         timerLog.log(chronoTotal);
 
     }
 
-    private void parseFile(String requestFilePath) throws IOException, IncorrectPrefixStructure,
-            IncorrectConditionStructure {
-        BufferedReader reader = new BufferedReader(new FileReader(requestFilePath));
+    private ArrayList<Query> parseQueries(
+            ArrayList<String> stringQueries) throws IncorrectPrefixStructure, IncorrectConditionStructure {
+        ArrayList<Query> queries = new ArrayList<>(stringQueries.size());
 
+        Chronos chronoQuery = Chronos.start("Parsing");
+        for (String stringQuery : stringQueries) {
+            //System.out.println(queryString);
+            queries.add(QueryParser.parse(stringQuery));
+        }
+        totalParsingTime = chronoQuery.stop();
+
+        return queries;
+    }
+
+    private ArrayList<QueryGraph> preProcessQueries(ArrayList<Query> queries) {
+        ArrayList<QueryGraph> queryGraphs = new ArrayList<>(queries.size());
+
+        Chronos chronoPreprocess = Chronos.start("Pre-process");
+        for (Query query : queries) {
+            //System.out.println(query);
+            queryGraphs.add(new QueryGraph(ds, query));
+        }
+        totalPreProcessTime = chronoPreprocess.stop();
+
+        return queryGraphs;
+    }
+
+    private void exec(ArrayList<QueryGraph> queryGraphs) throws IncorrectPrefixStructure,
+            IncorrectConditionStructure,
+            IOException {
+
+
+        //System.out.println(queryGraph);
+
+        Chronos chronoProcess =
+                Chronos.start("Process");
+
+        for (int i = 0, queryGraphsSize = queryGraphs.size(); i < queryGraphsSize; i++) {
+            QueryGraph queryGraph = queryGraphs.get(i);
+            TIntHashSet results = manager.evaluate(queryGraph);
+
+            ArrayList<String> finalResults = new ArrayList<>(results.size());
+            for (TIntIterator iterator = results.iterator(); iterator.hasNext(); ) {
+                int result = iterator.next();
+                finalResults.add(ds.getValue(result));
+            }
+
+            resultLog.log("Q" + String.format("% 2d", i + 1), finalResults);
+        }
+
+
+        totalProcessTime = chronoProcess.stop();
+
+    }
+
+    private ArrayList<String> parseFile(String requestFilePath) throws IOException, IncorrectPrefixStructure,
+            IncorrectConditionStructure {
+        ArrayList<String> stringQueries = new ArrayList<>();
+
+        BufferedReader reader = new BufferedReader(new FileReader(requestFilePath));
         StringBuilder sb = new StringBuilder();
         String line;
-        int iterator = 1;
+
         while ((line = reader.readLine()) != null) {
             line = line.trim();
 
@@ -169,58 +233,16 @@ public final class Main {
                 sb.append(line).append("\n");
 
                 if (line.charAt(line.length() - 1) == '}') {
-                    exec(iterator, sb.toString());
-
-                    ++iterator;
+                    //exec(iterator, sb.toString());
+                    stringQueries.add(sb.toString());
                     sb = new StringBuilder();
                 }
             }
         }
+
         reader.close();
-    }
 
-    private void exec(int queryNumber, String queryString) throws IncorrectPrefixStructure,
-            IncorrectConditionStructure,
-            IOException {
-        //System.out.println(queryString);
-
-        ArrayList<String> times = new ArrayList<>(4);
-        Chronos totalExec = Chronos.start("total");
-        Chronos chronoQuery =
-                Chronos.start("Parsing");
-        Query query = QueryParser.parse(queryString);
-        times.add(Chronos.formatMillis(chronoQuery.stop()));
-
-        //System.out.println(query);
-
-
-        Chronos chronoPreprocess =
-                Chronos.start("Pre-process");
-        QueryGraph queryGraph = new QueryGraph(ds, query);
-        times.add(Chronos.formatMillis(chronoPreprocess.stop()));
-
-        //System.out.println(queryGraph);
-
-        Chronos chronoProcess =
-                Chronos.start("Process");
-        TIntHashSet results = manager.evaluate(queryGraph);
-        times.add(Chronos.formatMillis(chronoProcess.stop()));
-        times.add(Chronos.formatMillis(totalExec.stop()));
-
-        totalParsingTime += chronoQuery.duration();
-        totalPreProcessTime += chronoPreprocess.duration();
-        totalProcessTime += chronoProcess.duration();
-        total += totalExec.duration();
-
-        timerLog.log("Q" + String.format("% 2d", queryNumber), times);
-
-        ArrayList<String> finalResults = new ArrayList<>(results.size());
-        for (TIntIterator iterator = results.iterator(); iterator.hasNext(); ) {
-            int result = iterator.next();
-            finalResults.add(ds.getValue(result));
-        }
-
-        resultLog.log("Q" + String.format("% 2d", queryNumber), finalResults);
+        return stringQueries;
     }
 
     private static class RDFListener extends RDFHandlerBase {
