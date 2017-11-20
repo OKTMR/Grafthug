@@ -67,7 +67,7 @@ public final class Main {
     }
 
     private static String getVersion() {
-        return "Grafthug v1.1.1 - Bô Je";
+        return "Grafthug v1.1.1 - Bo Je";
     }
 
     /**
@@ -151,8 +151,8 @@ public final class Main {
 
     }
 
-    private void parseFile(
-            String requestFilePath) throws IOException, IncorrectPrefixStructure, IncorrectConditionStructure {
+    private void parseFile(String requestFilePath) throws IOException, IncorrectPrefixStructure,
+            IncorrectConditionStructure {
         BufferedReader reader = new BufferedReader(new FileReader(requestFilePath));
 
         StringBuilder sb = new StringBuilder();
@@ -161,8 +161,12 @@ public final class Main {
         while ((line = reader.readLine()) != null) {
             line = line.trim();
 
-            if (line.length() > 1) {
-                sb.append(line);
+            if (line.length() > 0) {
+                if (line.charAt(0) == '#') {
+                    continue;
+                }
+
+                sb.append(line).append("\n");
 
                 if (line.charAt(line.length() - 1) == '}') {
                     exec(iterator, sb.toString());
@@ -172,13 +176,14 @@ public final class Main {
                 }
             }
         }
-
         reader.close();
     }
 
     private void exec(int queryNumber, String queryString) throws IncorrectPrefixStructure,
             IncorrectConditionStructure,
             IOException {
+        //System.out.println(queryString);
+
         ArrayList<String> times = new ArrayList<>(4);
         Chronos totalExec = Chronos.start("total");
         Chronos chronoQuery =

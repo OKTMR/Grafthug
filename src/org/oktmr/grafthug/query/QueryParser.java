@@ -34,7 +34,8 @@ public class QueryParser {
             variableName.put(f.getName(), f);
         }
 
-        ArrayList<Condition> conditions = extractConditions(prefixes, variableName, cleanCurlyBrackets(splitted[1].trim()));
+        ArrayList<Condition> conditions = extractConditions(prefixes, variableName,
+                                                            cleanCurlyBrackets(splitted[1].trim()));
 
         Query query = new Query();
 
